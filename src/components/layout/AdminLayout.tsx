@@ -14,7 +14,7 @@ export function AdminLayout() {
   useMouseSpotlight();
 
   if (loading) return <LoadingScreen />;
-  if (!user) return <Navigate to="/" replace />;
+  if (!user) return <Navigate to="/login" replace />;
   if (profile && profile.role !== 'admin') return <Navigate to="/dashboard" replace />;
 
   return (

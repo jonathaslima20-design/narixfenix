@@ -14,7 +14,7 @@ export function UserLayout() {
   const { user, profile, loading } = useAuth();
 
   if (loading) return <LoadingScreen />;
-  if (!user) return <Navigate to="/" replace />;
+  if (!user) return <Navigate to="/login" replace />;
   if (profile?.role === 'admin') return <Navigate to="/admin" replace />;
 
   return (
