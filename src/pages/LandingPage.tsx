@@ -504,7 +504,7 @@ function Hero() {
         <div className="reveal mt-8 w-full">
           <div className="hairline" />
           <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
-            {['whatsapp nativo', 'funil kanban', 'disparos em massa', 'ia de priorização'].map((label) => (
+            {['whatsapp integrado', 'funil kanban', 'qualificação', 'disparos em massa'].map((label) => (
               <div
                 key={label}
                 className="flex items-center justify-center gap-2 font-mono text-[11px] uppercase tracking-[0.18em] text-white/35"
