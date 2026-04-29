@@ -161,74 +161,81 @@ function DraggableRow({
     <div
       ref={setRef}
       style={{ opacity: isDragging ? 0.35 : 1 }}
-      className={`flex items-center gap-2 p-2.5 rounded-xl border transition-colors ${
+      className={`flex items-start gap-2 p-2.5 rounded-xl border transition-colors ${
         isOver && !isDragging
           ? 'bg-white/[0.07] border-white/[0.15]'
           : 'bg-white/[0.03] border-white/[0.07]'
       }`}
     >
+      {/* Drag handle */}
       <button
         {...attributes}
         {...listeners}
-        className="p-0.5 cursor-grab active:cursor-grabbing text-white/25 hover:text-white/50 transition-colors shrink-0 touch-none"
+        className="p-0.5 mt-1 cursor-grab active:cursor-grabbing text-white/25 hover:text-white/50 transition-colors shrink-0 touch-none"
       >
         <GripVertical size={14} />
       </button>
 
-      <div className="flex-1 min-w-0 flex items-center gap-2">
-        <Dropdown
-          value={category.icon}
-          onChange={(v) => onIconChange(category.key, v)}
-          options={iconOptions}
-          width="w-[118px]"
-          renderOption={(o) => {
-            const Icon = resolveIcon(o.value);
-            return (
-              <>
-                <Icon size={13} className="shrink-0 text-white/60" />
-                <span>{o.label}</span>
-              </>
-            );
-          }}
-          renderSelected={(o) => {
-            if (!o) return null;
-            const Icon = resolveIcon(o.value);
-            return (
-              <span className="flex items-center gap-1.5">
-                <Icon size={12} className="shrink-0 text-white/60" />
-                {o.label}
-              </span>
-            );
-          }}
-        />
+      {/* Main content — wraps to 2 rows on mobile */}
+      <div className="flex-1 min-w-0 flex flex-col gap-1.5">
+        {/* Row 1: icon dropdown + name input */}
+        <div className="flex items-center gap-2 min-w-0">
+          <Dropdown
+            value={category.icon}
+            onChange={(v) => onIconChange(category.key, v)}
+            options={iconOptions}
+            width="w-[100px] sm:w-[118px]"
+            renderOption={(o) => {
+              const Icon = resolveIcon(o.value);
+              return (
+                <>
+                  <Icon size={13} className="shrink-0 text-white/60" />
+                  <span>{o.label}</span>
+                </>
+              );
+            }}
+            renderSelected={(o) => {
+              if (!o) return null;
+              const Icon = resolveIcon(o.value);
+              return (
+                <span className="flex items-center gap-1.5">
+                  <Icon size={12} className="shrink-0 text-white/60" />
+                  {o.label}
+                </span>
+              );
+            }}
+          />
+          <input
+            value={category.label}
+            onChange={(e) => onLabelChange(category.key, e.target.value)}
+            className="flex-1 min-w-0 bg-transparent border-b border-white/[0.10] focus:border-white/30 text-sm text-white focus:outline-none py-0.5 transition-colors"
+            placeholder="Nome da categoria"
+          />
+        </div>
 
-        <input
-          value={category.label}
-          onChange={(e) => onLabelChange(category.key, e.target.value)}
-          className="flex-1 min-w-0 bg-transparent border-b border-white/[0.10] focus:border-white/30 text-sm text-white focus:outline-none py-0.5 transition-colors"
-          placeholder="Nome da categoria"
-        />
-
-        <Dropdown
-          value={category.color}
-          onChange={(v) => onColorChange(category.key, v)}
-          options={colorOptions}
-          width="w-[90px]"
-          renderOption={(o) => (
-            <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${o.value}`}>{o.label}</span>
-          )}
-          renderSelected={(o) => o ? (
-            <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${o.value}`}>{o.label}</span>
-          ) : null}
-        />
+        {/* Row 2: color dropdown + badge preview */}
+        <div className="flex items-center gap-2">
+          <Dropdown
+            value={category.color}
+            onChange={(v) => onColorChange(category.key, v)}
+            options={colorOptions}
+            width="w-[100px] sm:w-[118px]"
+            renderOption={(o) => (
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${o.value}`}>{o.label}</span>
+            )}
+            renderSelected={(o) => o ? (
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${o.value}`}>{o.label}</span>
+            ) : null}
+          />
+          <CategoryBadge category={category} />
+        </div>
       </div>
 
-      <CategoryBadge category={category} />
-
+      {/* Delete button */}
       <button
         onClick={() => onDelete(category.key)}
         disabled={!canDelete}
-        className="p-1 rounded-lg hover:bg-rose-500/10 text-white/25 hover:text-rose-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed shrink-0"
+        className="p-1 mt-0.5 rounded-lg hover:bg-rose-500/10 text-white/25 hover:text-rose-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed shrink-0"
         title={canDelete ? 'Remover categoria' : 'Pelo menos uma categoria é necessária'}
       >
         <Trash2 size={13} />
@@ -359,59 +366,65 @@ export function CategoriesCard() {
               exit={{ opacity: 0, height: 0 }}
               className="overflow-hidden"
             >
-              <div className="flex items-center gap-2 p-3 rounded-xl bg-white/[0.05] border border-white/[0.10] mb-2">
-                <Dropdown
-                  value={newIcon}
-                  onChange={setNewIcon}
-                  options={iconOptions}
-                  width="w-[118px]"
-                  renderOption={(o) => {
-                    const Icon = resolveIcon(o.value);
-                    return (
-                      <>
-                        <Icon size={13} className="shrink-0 text-white/60" />
-                        <span>{o.label}</span>
-                      </>
-                    );
-                  }}
-                  renderSelected={(o) => {
-                    if (!o) return null;
-                    const Icon = resolveIcon(o.value);
-                    return (
-                      <span className="flex items-center gap-1.5">
-                        <Icon size={12} className="shrink-0 text-white/60" />
-                        {o.label}
-                      </span>
-                    );
-                  }}
-                />
-                <input
-                  autoFocus
-                  value={newLabel}
-                  onChange={(e) => setNewLabel(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === 'Enter') handleAdd(); if (e.key === 'Escape') setShowAdd(false); }}
-                  placeholder="Nome da categoria"
-                  className="flex-1 bg-transparent border-b border-white/[0.15] text-sm text-white focus:outline-none focus:border-white/30 py-0.5"
-                />
-                <Dropdown
-                  value={newColor}
-                  onChange={setNewColor}
-                  options={colorOptions}
-                  width="w-[90px]"
-                  renderOption={(o) => (
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${o.value}`}>{o.label}</span>
-                  )}
-                  renderSelected={(o) => o ? (
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${o.value}`}>{o.label}</span>
-                  ) : null}
-                />
-                <button
-                  onClick={handleAdd}
-                  disabled={adding || !newLabel.trim()}
-                  className="px-3 py-1.5 rounded-lg bg-white/[0.10] hover:bg-white/[0.18] text-white text-xs font-medium transition-all disabled:opacity-50"
-                >
-                  {adding ? 'Salvando...' : 'Adicionar'}
-                </button>
+              <div className="flex flex-col gap-2 p-3 rounded-xl bg-white/[0.05] border border-white/[0.10] mb-2">
+                {/* Row 1: icon + name */}
+                <div className="flex items-center gap-2">
+                  <Dropdown
+                    value={newIcon}
+                    onChange={setNewIcon}
+                    options={iconOptions}
+                    width="w-[100px] sm:w-[118px]"
+                    renderOption={(o) => {
+                      const Icon = resolveIcon(o.value);
+                      return (
+                        <>
+                          <Icon size={13} className="shrink-0 text-white/60" />
+                          <span>{o.label}</span>
+                        </>
+                      );
+                    }}
+                    renderSelected={(o) => {
+                      if (!o) return null;
+                      const Icon = resolveIcon(o.value);
+                      return (
+                        <span className="flex items-center gap-1.5">
+                          <Icon size={12} className="shrink-0 text-white/60" />
+                          {o.label}
+                        </span>
+                      );
+                    }}
+                  />
+                  <input
+                    autoFocus
+                    value={newLabel}
+                    onChange={(e) => setNewLabel(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') handleAdd(); if (e.key === 'Escape') setShowAdd(false); }}
+                    placeholder="Nome da categoria"
+                    className="flex-1 min-w-0 bg-transparent border-b border-white/[0.15] text-sm text-white focus:outline-none focus:border-white/30 py-0.5"
+                  />
+                </div>
+                {/* Row 2: color + add button */}
+                <div className="flex items-center gap-2">
+                  <Dropdown
+                    value={newColor}
+                    onChange={setNewColor}
+                    options={colorOptions}
+                    width="w-[100px] sm:w-[118px]"
+                    renderOption={(o) => (
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${o.value}`}>{o.label}</span>
+                    )}
+                    renderSelected={(o) => o ? (
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${o.value}`}>{o.label}</span>
+                    ) : null}
+                  />
+                  <button
+                    onClick={handleAdd}
+                    disabled={adding || !newLabel.trim()}
+                    className="ml-auto px-3 py-1.5 rounded-lg bg-white/[0.10] hover:bg-white/[0.18] text-white text-xs font-medium transition-all disabled:opacity-50"
+                  >
+                    {adding ? 'Salvando...' : 'Adicionar'}
+                  </button>
+                </div>
               </div>
             </motion.div>
           )}
