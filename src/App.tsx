@@ -6,7 +6,11 @@ import { AdminLayout } from './components/layout/AdminLayout';
 import { UserLayout } from './components/layout/UserLayout';
 import { CampaignBuilder } from './pages/dashboard/CampaignBuilder';
 import { DashboardHome } from './pages/dashboard/DashboardHome';
-import { PlaceholderPage } from './pages/dashboard/PlaceholderPage';
+import { InboxPage } from './pages/dashboard/InboxPage';
+import { LeadsPage } from './pages/dashboard/LeadsPage';
+import { CampaignsPage } from './pages/dashboard/CampaignsPage';
+import { SettingsPage } from './pages/dashboard/SettingsPage';
+import { HelpPage } from './pages/dashboard/HelpPage';
 import { AdminOverview } from './pages/admin/AdminOverview';
 import { ClientManagement } from './pages/admin/ClientManagement';
 import { PlanManagement } from './pages/admin/PlanManagement';
@@ -33,12 +37,12 @@ export default function App() {
 
           <Route path="/dashboard" element={<UserLayout />}>
             <Route index element={<DashboardHome />} />
-            <Route path="leads" element={<PlaceholderPage title="Inbox" tag="inbox" />} />
-            <Route path="crm" element={<PlaceholderPage title="Gestão de Leads" tag="crm" />} />
-            <Route path="campaigns" element={<PlaceholderPage title="Campanhas" tag="campanhas" />} />
+            <Route path="leads" element={<InboxPage />} />
+            <Route path="crm" element={<LeadsPage />} />
+            <Route path="campaigns" element={<CampaignsPage />} />
             <Route path="campaigns/new" element={<CampaignBuilder />} />
-            <Route path="settings" element={<PlaceholderPage title="Configurações" tag="configurações" />} />
-            <Route path="ajuda" element={<PlaceholderPage title="Ajuda" tag="ajuda" />} />
+            <Route path="settings" element={<SettingsPage />} />
+            <Route path="ajuda" element={<HelpPage />} />
           </Route>
 
           <Route path="/admin" element={<AdminLayout />}>
