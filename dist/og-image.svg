@@ -1,47 +1,38 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
   <defs>
-    <!-- Ambient radial glow behind brain -->
-    <radialGradient id="bg-glow" cx="50%" cy="42%" r="52%">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.055"/>
-      <stop offset="60%" stop-color="#ffffff" stop-opacity="0.012"/>
+    <radialGradient id="bg-glow" cx="50%" cy="48%" r="55%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.07"/>
+      <stop offset="55%" stop-color="#ffffff" stop-opacity="0.018"/>
       <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
     </radialGradient>
 
-    <!-- Tight halo around brain -->
     <radialGradient id="brain-halo" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.10"/>
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.13"/>
       <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
     </radialGradient>
 
-    <!-- Brain soft-glow filter -->
-    <filter id="brain-glow" x="-80%" y="-80%" width="260%" height="260%">
-      <feGaussianBlur stdDeviation="9" result="blur"/>
+    <filter id="brain-glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="18" result="blur"/>
       <feMerge>
         <feMergeNode in="blur"/>
         <feMergeNode in="SourceGraphic"/>
       </feMerge>
     </filter>
 
-    <!-- Wordmark soft-glow filter -->
     <filter id="logo-glow" x="-15%" y="-80%" width="130%" height="260%">
-      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feGaussianBlur stdDeviation="5" result="blur"/>
       <feMerge>
         <feMergeNode in="blur"/>
         <feMergeNode in="SourceGraphic"/>
       </feMerge>
-    </filter>
-
-    <!-- Card drop shadow -->
-    <filter id="card-shadow" x="-10%" y="-10%" width="120%" height="140%">
-      <feDropShadow dx="0" dy="2" stdDeviation="8" flood-color="#000000" flood-opacity="0.45"/>
     </filter>
   </defs>
 
-  <!-- ─── BACKGROUND ─── -->
+  <!-- BACKGROUND -->
   <rect width="1200" height="630" fill="#060809"/>
 
-  <!-- Subtle white grid -->
-  <g stroke="#ffffff" stroke-opacity="0.022" stroke-width="1">
+  <!-- Subtle grid -->
+  <g stroke="#ffffff" stroke-opacity="0.018" stroke-width="1">
     <line x1="0" y1="105" x2="1200" y2="105"/>
     <line x1="0" y1="210" x2="1200" y2="210"/>
     <line x1="0" y1="315" x2="1200" y2="315"/>
@@ -56,19 +47,23 @@
     <line x1="1050" y1="0" x2="1050" y2="630"/>
   </g>
 
-  <!-- Ambient central glow -->
-  <ellipse cx="600" cy="255" rx="440" ry="330" fill="url(#bg-glow)"/>
+  <!-- Ambient glow -->
+  <ellipse cx="600" cy="280" rx="480" ry="360" fill="url(#bg-glow)"/>
 
-  <!-- ─── BRAIN ICON ─── -->
-  <!-- Halo -->
-  <ellipse cx="600" cy="210" rx="100" ry="82" fill="url(#brain-halo)"/>
+  <!-- Brain halo -->
+  <ellipse cx="600" cy="268" rx="280" ry="240" fill="url(#brain-halo)"/>
 
-  <!-- Icon: Lucide Brain, 24×24 viewbox, scaled 4.17× (~100px), centered at (600, 210) -->
-  <g transform="translate(550, 160) scale(4.17)"
+  <!--
+    Brain icon: Lucide Brain 24x24 viewbox
+    Scaled to ~480px wide (factor 20), centered at (600, 268)
+    translate so that 12×20=240 lands at 600 → x offset = 600-240 = 360
+    and 11×20=220 lands at 268 → y offset = 268-220 = 48
+  -->
+  <g transform="translate(360, 48) scale(20)"
      filter="url(#brain-glow)"
      fill="none"
-     stroke="rgba(255,255,255,0.82)"
-     stroke-width="1.5"
+     stroke="rgba(255,255,255,0.80)"
+     stroke-width="0.9"
      stroke-linecap="round"
      stroke-linejoin="round">
     <path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/>
@@ -82,85 +77,29 @@
     <path d="M19.967 17.484A4 4 0 0 1 18 18"/>
   </g>
 
-  <!-- ─── WORDMARK ─── -->
+  <!-- WORDMARK -->
   <text
-    x="600" y="348"
+    x="600" y="566"
     font-family="'Geist Mono', 'Courier New', ui-monospace, monospace"
-    font-size="60"
+    font-size="48"
     font-weight="400"
-    fill="rgba(255,255,255,0.90)"
+    fill="rgba(255,255,255,0.88)"
     text-anchor="middle"
     letter-spacing="-1"
     filter="url(#logo-glow)"
   >brainlead</text>
 
-  <!-- ─── TAGLINE ─── -->
+  <!-- TAGLINE -->
   <text
-    x="600" y="396"
+    x="600" y="602"
     font-family="'Geist Mono', 'Courier New', ui-monospace, monospace"
-    font-size="15"
+    font-size="13"
     font-weight="300"
-    fill="rgba(255,255,255,0.36)"
+    fill="rgba(255,255,255,0.32)"
     text-anchor="middle"
     letter-spacing="4"
   >TRANSFORME LEADS EM VENDAS</text>
 
-  <!-- ─── DIVIDER ─── -->
-  <rect x="536" y="422" width="128" height="1" fill="rgba(255,255,255,0.12)"/>
-
-  <!-- ─── GLASS FEATURE CARDS ─── -->
-
-  <!-- Card 1: / chat -->
-  <g filter="url(#card-shadow)">
-    <rect x="198" y="456" width="224" height="80" rx="16"
-          fill="rgba(255,255,255,0.035)"
-          stroke="rgba(255,255,255,0.08)"
-          stroke-width="1"/>
-  </g>
-  <circle cx="228" cy="486" r="3.5" fill="rgba(255,255,255,0.50)"/>
-  <text x="243" y="490"
-    font-family="'Geist Mono', 'Courier New', ui-monospace, monospace"
-    font-size="10" font-weight="400"
-    fill="rgba(255,255,255,0.30)" letter-spacing="2.5">/ CHAT</text>
-  <text x="228" y="514"
-    font-family="'Geist Mono', 'Courier New', ui-monospace, monospace"
-    font-size="14" font-weight="400"
-    fill="rgba(255,255,255,0.72)" letter-spacing="-0.2">Conversas</text>
-
-  <!-- Card 2: / pipeline -->
-  <g filter="url(#card-shadow)">
-    <rect x="488" y="456" width="224" height="80" rx="16"
-          fill="rgba(255,255,255,0.035)"
-          stroke="rgba(255,255,255,0.08)"
-          stroke-width="1"/>
-  </g>
-  <circle cx="518" cy="486" r="3.5" fill="rgba(255,255,255,0.50)"/>
-  <text x="533" y="490"
-    font-family="'Geist Mono', 'Courier New', ui-monospace, monospace"
-    font-size="10" font-weight="400"
-    fill="rgba(255,255,255,0.30)" letter-spacing="2.5">/ PIPELINE</text>
-  <text x="518" y="514"
-    font-family="'Geist Mono', 'Courier New', ui-monospace, monospace"
-    font-size="14" font-weight="400"
-    fill="rgba(255,255,255,0.72)" letter-spacing="-0.2">Gestão de Leads</text>
-
-  <!-- Card 3: / campanhas -->
-  <g filter="url(#card-shadow)">
-    <rect x="778" y="456" width="224" height="80" rx="16"
-          fill="rgba(255,255,255,0.035)"
-          stroke="rgba(255,255,255,0.08)"
-          stroke-width="1"/>
-  </g>
-  <circle cx="808" cy="486" r="3.5" fill="rgba(255,255,255,0.50)"/>
-  <text x="823" y="490"
-    font-family="'Geist Mono', 'Courier New', ui-monospace, monospace"
-    font-size="10" font-weight="400"
-    fill="rgba(255,255,255,0.30)" letter-spacing="2.5">/ CAMPANHAS</text>
-  <text x="808" y="514"
-    font-family="'Geist Mono', 'Courier New', ui-monospace, monospace"
-    font-size="14" font-weight="400"
-    fill="rgba(255,255,255,0.72)" letter-spacing="-0.2">Disparos em massa</text>
-
-  <!-- ─── BOTTOM EDGE ─── -->
-  <rect x="0" y="628" width="1200" height="2" fill="rgba(255,255,255,0.055)"/>
+  <!-- Bottom edge -->
+  <rect x="0" y="628" width="1200" height="2" fill="rgba(255,255,255,0.05)"/>
 </svg>
