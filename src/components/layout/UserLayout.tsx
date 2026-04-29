@@ -33,7 +33,7 @@ function UserLayoutInner() {
   const accountDisabled = profile?.is_enabled === false;
 
   return (
-    <div className="obsidian-canvas relative flex min-h-screen font-sans text-white">
+    <div className="obsidian-canvas relative flex h-screen font-sans text-white">
       <div className="noise-layer" aria-hidden="true" />
       <AmbientBackground intensity="subtle" />
       {/* Desktop sidebar */}
@@ -75,7 +75,7 @@ function UserLayoutInner() {
             <Menu size={20} />
           </button>
         </div>
-        <main className="flex-1">
+        <main className="flex-1 min-h-0 relative">
           <Outlet />
         </main>
         <div className="py-6 flex items-center justify-center gap-2 lg:hidden">
