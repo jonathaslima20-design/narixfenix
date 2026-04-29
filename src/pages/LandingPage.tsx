@@ -11,6 +11,9 @@ import {
   Flame,
   Thermometer,
   Snowflake,
+  User,
+  DollarSign,
+  ShoppingCart,
 } from 'lucide-react';
 
 function useMouseSpotlight() {
@@ -145,6 +148,145 @@ function Header() {
   );
 }
 
+const WAVE_W = 900;
+const WAVE_H = 120;
+const WAVE_PATH = `M 0 ${WAVE_H / 2}
+  C 80 ${WAVE_H / 2 - 38}, 140 ${WAVE_H / 2 + 38}, 220 ${WAVE_H / 2}
+  C 300 ${WAVE_H / 2 - 38}, 360 ${WAVE_H / 2 + 38}, 450 ${WAVE_H / 2}
+  C 540 ${WAVE_H / 2 - 38}, 600 ${WAVE_H / 2 + 38}, 680 ${WAVE_H / 2}
+  C 760 ${WAVE_H / 2 - 38}, 820 ${WAVE_H / 2 + 38}, ${WAVE_W} ${WAVE_H / 2 - 8}`;
+
+const ANCHOR_POINTS = [
+  { cx: 220, cy: WAVE_H / 2, delay: 0 },
+  { cx: 310, cy: WAVE_H / 2 + 35, delay: 0.4 },
+  { cx: 450, cy: WAVE_H / 2, delay: 0.8 },
+  { cx: 590, cy: WAVE_H / 2 - 35, delay: 0.3 },
+  { cx: 680, cy: WAVE_H / 2, delay: 0.6 },
+];
+
+function FunnelWave() {
+  return (
+    <div className="reveal relative w-full max-w-5xl mx-auto mt-16 select-none" style={{ height: WAVE_H + 60 }}>
+      {/* Dot grid background */}
+      <div
+        className="pointer-events-none absolute inset-0 rounded-3xl"
+        style={{
+          backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px)',
+          backgroundSize: '24px 24px',
+        }}
+      />
+
+      {/* Left fade */}
+      <div className="pointer-events-none absolute inset-y-0 left-0 w-24 rounded-l-3xl" style={{ background: 'linear-gradient(to right, #050505, transparent)' }} />
+      {/* Right fade */}
+      <div className="pointer-events-none absolute inset-y-0 right-0 w-24 rounded-r-3xl" style={{ background: 'linear-gradient(to left, #050505, transparent)' }} />
+
+      {/* Avatars — left anchor */}
+      <div className="absolute left-0 flex items-end gap-0" style={{ bottom: 16, transform: 'translateX(-8px)' }}>
+        {[{ size: 36, offset: 0 }, { size: 40, offset: -8 }, { size: 34, offset: -16 }, { size: 32, offset: -6 }].map((a, i) => (
+          <div
+            key={i}
+            className="rounded-full bg-neutral-800 border border-white/[0.13] flex items-center justify-center"
+            style={{
+              width: a.size,
+              height: a.size,
+              marginLeft: i === 0 ? 0 : -10,
+              zIndex: 4 - i,
+              marginBottom: a.offset < -10 ? 4 : 0,
+            }}
+          >
+            <User size={a.size * 0.48} className="text-white/35" />
+          </div>
+        ))}
+      </div>
+
+      {/* SVG wave */}
+      <svg
+        viewBox={`0 0 ${WAVE_W} ${WAVE_H}`}
+        preserveAspectRatio="none"
+        className="absolute inset-x-0 w-full"
+        style={{ height: WAVE_H, top: 30 }}
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <defs>
+          <filter id="glow-em">
+            <feGaussianBlur stdDeviation="3" result="blur" />
+            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+          </filter>
+          <style>{`
+            @keyframes flowDash {
+              from { stroke-dashoffset: 1200; }
+              to   { stroke-dashoffset: 0; }
+            }
+            @keyframes waveNodePulse {
+              0%, 100% { r: 4; opacity: 0.7; }
+              50%       { r: 6; opacity: 1; }
+            }
+          `}</style>
+        </defs>
+
+        {/* Glow layer */}
+        <path
+          d={WAVE_PATH}
+          fill="none"
+          stroke="rgba(52,211,153,0.18)"
+          strokeWidth="8"
+          filter="url(#glow-em)"
+        />
+
+        {/* Main wave line */}
+        <path
+          d={WAVE_PATH}
+          fill="none"
+          stroke="#34d399"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeDasharray="1200"
+          style={{ animation: 'flowDash 2.8s cubic-bezier(0.4,0,0.2,1) forwards' }}
+        />
+
+        {/* Arrow at end */}
+        <polyline
+          points={`${WAVE_W - 18},${WAVE_H / 2 - 16} ${WAVE_W},${WAVE_H / 2 - 8} ${WAVE_W - 18},${WAVE_H / 2}`}
+          fill="none"
+          stroke="#34d399"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+
+        {/* Anchor points */}
+        {ANCHOR_POINTS.map((p, i) => (
+          <circle
+            key={i}
+            cx={p.cx}
+            cy={p.cy}
+            r={4}
+            fill="#34d399"
+            style={{ animation: `waveNodePulse 2s ease-in-out ${p.delay}s infinite` }}
+          />
+        ))}
+      </svg>
+
+      {/* Conversion icon — right anchor */}
+      <div
+        className="absolute right-0 flex items-center gap-2 rounded-full border px-4 py-2"
+        style={{
+          top: 30 + WAVE_H / 2 - 8 - 22,
+          borderColor: 'rgba(52,211,153,0.3)',
+          background: 'rgba(0,0,0,0.6)',
+          backdropFilter: 'blur(12px)',
+          boxShadow: '0 0 20px rgba(52,211,153,0.12)',
+        }}
+      >
+        <DollarSign size={16} className="text-emerald-400" />
+        <div className="w-px h-4 bg-white/10" />
+        <ShoppingCart size={16} className="text-emerald-400" />
+      </div>
+    </div>
+  );
+}
+
 function Hero() {
   return (
     <section className="relative pt-48 pb-32 px-6">
@@ -179,7 +321,9 @@ function Hero() {
           <Link to="/cadastro" className="ghost-btn">Ver planos</Link>
         </div>
 
-        <div className="reveal mt-20 w-full">
+        <FunnelWave />
+
+        <div className="reveal mt-8 w-full">
           <div className="hairline" />
           <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
             {['whatsapp nativo', 'funil kanban', 'disparos em massa', 'ia de priorização'].map((label) => (
