@@ -175,7 +175,7 @@ function Hero() {
             <span>Começar gratuitamente</span>
             <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
           </Link>
-          <Link to="/login" className="ghost-btn">Ver planos</Link>
+          <Link to="/cadastro" className="ghost-btn">Ver planos</Link>
         </div>
 
         <div className="reveal mt-20 w-full">
