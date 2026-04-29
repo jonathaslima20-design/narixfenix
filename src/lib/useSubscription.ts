@@ -42,6 +42,7 @@ export function useSubscription(): SubscriptionState {
         expires_at: data.expires_at,
         cancelled_at: data.cancelled_at,
         send_count: data.send_count ?? 0,
+        max_instances_override: data.max_instances_override ?? null,
         notes: data.notes,
         created_at: data.created_at,
         updated_at: data.updated_at,
@@ -52,16 +53,16 @@ export function useSubscription(): SubscriptionState {
       setPlan(null);
     }
     setLoading(false);
-  }, [user]);
+  }, [user?.id]);
 
   useEffect(() => {
     fetchSubscription();
   }, [fetchSubscription]);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user?.id) return;
     const channel = supabase
-      .channel('user-subscription')
+      .channel(`user-subscription-${user.id}`)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'client_subscriptions', filter: `user_id=eq.${user.id}` },
@@ -69,7 +70,7 @@ export function useSubscription(): SubscriptionState {
       )
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [user, fetchSubscription]);
+  }, [user?.id, fetchSubscription]);
 
   const isTrial = subscription?.status === 'trial';
 

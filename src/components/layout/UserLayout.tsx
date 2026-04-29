@@ -8,6 +8,7 @@ import { SubscriptionProvider, useSubscriptionCtx } from '../../lib/Subscription
 import { PricingModal } from '../ui/PricingModal';
 import { BrainLoader } from '../ui/BrainLoader';
 import { AmbientBackground } from '../ui/AmbientBackground';
+import { ErrorBoundary } from '../ui/ErrorBoundary';
 import { useMouseSpotlight } from '../../hooks/useMouseSpotlight';
 
 export function UserLayout() {
@@ -76,7 +77,9 @@ function UserLayoutInner() {
           </button>
         </div>
         <main className="flex-1 min-h-0 relative">
-          <Outlet />
+          <ErrorBoundary>
+            <Outlet />
+          </ErrorBoundary>
         </main>
       </div>
 

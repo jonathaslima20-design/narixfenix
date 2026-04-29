@@ -104,7 +104,7 @@ export function ChatPanel({ lead, userId, sendMode, onOpenDetails, onLeadUpdated
         .select('*')
         .eq('lead_id', currentLeadId)
         .order('created_at', { ascending: false })
-        .limit(500);
+        .limit(80);
       if (cancelled) return;
       const incoming = ((data as Message[]) || []).slice().reverse();
       setMessages((prev) => {

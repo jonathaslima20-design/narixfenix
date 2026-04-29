@@ -32,7 +32,8 @@ export function InboxPage() {
         .from('leads')
         .select('*')
         .eq('user_id', user!.id)
-        .order('last_activity_at', { ascending: false, nullsFirst: false });
+        .order('last_activity_at', { ascending: false, nullsFirst: false })
+        .limit(200);
       if (!active) return;
       setLeads((data ?? []) as Lead[]);
       setLoading(false);
