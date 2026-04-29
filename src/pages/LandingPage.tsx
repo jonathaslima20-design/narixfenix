@@ -200,12 +200,9 @@ function useCounter(target: number, duration = 1800, startDelay = 1200) {
 function FunnelWave() {
   const revenue = useCounter(49300);
 
-  return (
-    <div
-      className="reveal relative w-full max-w-5xl mx-auto mt-16 select-none"
-      style={{ height: H + 80 }}
-    >
-      {/* Dot grid with radial mask so edges dissolve */}
+  const svgSection = (
+    <div className="relative w-full" style={{ height: H + 20 }}>
+      {/* Dot grid with radial mask */}
       <div
         className="pointer-events-none absolute inset-0"
         style={{
@@ -216,7 +213,7 @@ function FunnelWave() {
         }}
       />
 
-      {/* Ambient glow under wave center */}
+      {/* Ambient glow */}
       <div
         className="pointer-events-none absolute"
         style={{
@@ -227,67 +224,35 @@ function FunnelWave() {
       />
 
       {/* Edge fades */}
-      <div className="pointer-events-none absolute inset-y-0 left-0 w-32" style={{ background: 'linear-gradient(to right, #050505 40%, transparent)' }} />
-      <div className="pointer-events-none absolute inset-y-0 right-0 w-32" style={{ background: 'linear-gradient(to left, #050505 40%, transparent)' }} />
-
-      {/* Left chip — leads source */}
-      <div
-        className="absolute left-0 flex items-center gap-2.5 rounded-full border px-3.5 py-2"
-        style={{
-          top: H / 2 + 10,
-          borderColor: 'rgba(255,255,255,0.08)',
-          background: 'rgba(10,10,10,0.75)',
-          backdropFilter: 'blur(14px)',
-          boxShadow: '0 0 0 1px rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.5)',
-        }}
-      >
-        <div className="relative flex h-2 w-2">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-50" />
-          <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
-        </div>
-        <MessageCircle size={13} className="text-white/50" />
-        <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/45">leads entrando</span>
-      </div>
+      <div className="pointer-events-none absolute inset-y-0 left-0 w-8 md:w-32" style={{ background: 'linear-gradient(to right, #050505 40%, transparent)' }} />
+      <div className="pointer-events-none absolute inset-y-0 right-0 w-8 md:w-32" style={{ background: 'linear-gradient(to left, #050505 40%, transparent)' }} />
 
       {/* SVG wave */}
       <svg
         viewBox={`0 0 ${W} ${H}`}
         preserveAspectRatio="none"
         className="absolute inset-x-0 w-full"
-        style={{ height: H, top: 40 }}
+        style={{ height: H, top: 10 }}
         xmlns="http://www.w3.org/2000/svg"
       >
         <defs>
-          {/* Gradient along wave: cool white → emerald */}
           <linearGradient id="wave-grad" x1="0" y1="0" x2="1" y2="0">
             <stop offset="0%"   stopColor="rgba(255,255,255,0.25)" />
             <stop offset="45%"  stopColor="rgba(52,211,153,0.7)" />
             <stop offset="100%" stopColor="#34d399" />
           </linearGradient>
-
           <linearGradient id="echo-grad" x1="0" y1="0" x2="1" y2="0">
             <stop offset="0%"   stopColor="rgba(255,255,255,0.04)" />
             <stop offset="100%" stopColor="rgba(52,211,153,0.08)" />
           </linearGradient>
-
-          {/* Soft glow filter */}
           <filter id="wave-glow" x="-5%" y="-50%" width="110%" height="200%">
             <feGaussianBlur stdDeviation="4" result="blur" />
-            <feMerge>
-              <feMergeNode in="blur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
+            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
           </filter>
-
-          {/* Node ring glow */}
           <filter id="node-glow" x="-100%" y="-100%" width="300%" height="300%">
             <feGaussianBlur stdDeviation="2.5" result="blur" />
-            <feMerge>
-              <feMergeNode in="blur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
+            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
           </filter>
-
           <style>{`
             @keyframes flowDash {
               from { stroke-dashoffset: 2200; }
@@ -312,7 +277,6 @@ function FunnelWave() {
           `}</style>
         </defs>
 
-        {/* Echo / shadow wave */}
         <path
           d={ECHO_PATH}
           fill="none"
@@ -322,8 +286,6 @@ function FunnelWave() {
           strokeDasharray="2200"
           style={{ animation: 'echoFlow 3.4s cubic-bezier(0.4,0,0.2,1) 0.3s forwards', opacity: 0 }}
         />
-
-        {/* Glow halo behind main line */}
         <path
           d={MAIN_PATH}
           fill="none"
@@ -331,8 +293,6 @@ function FunnelWave() {
           strokeWidth="10"
           filter="url(#wave-glow)"
         />
-
-        {/* Main wave line */}
         <path
           d={MAIN_PATH}
           fill="none"
@@ -342,8 +302,6 @@ function FunnelWave() {
           strokeDasharray="2200"
           style={{ animation: 'flowDash 2.8s cubic-bezier(0.4,0,0.2,1) forwards' }}
         />
-
-        {/* Arrowhead at end */}
         <polyline
           points={`${W - 16},${MID - 4 - 10} ${W},${MID - 4} ${W - 16},${MID - 4 + 10}`}
           fill="none"
@@ -353,30 +311,28 @@ function FunnelWave() {
           strokeLinejoin="round"
         />
 
-        {/* Nodes with labels */}
         {NODES.map((n, i) => (
           <g key={i}>
-            {/* Pulsing ring */}
             <circle
               cx={n.cx} cy={n.cy} r={9}
               fill="rgba(52,211,153,0.15)"
               filter="url(#node-glow)"
               style={{ animation: `nodeRingPulse 2.4s ease-in-out ${n.delay}s infinite` }}
             />
-            {/* Inner dot */}
             <circle
               cx={n.cx} cy={n.cy} r={3.5}
               fill="#34d399"
               style={{ animation: `nodeDotPulse 2.4s ease-in-out ${n.delay}s infinite` }}
             />
-            {/* Tick mark connecting to label */}
+            {/* Labels only on md+ — hidden on mobile via opacity trick using SVG class */}
             <line
+              className="hidden-mobile-svg"
               x1={n.cx} y1={n.above ? n.cy - 13 : n.cy + 13}
               x2={n.cx} y2={n.above ? n.cy - 26 : n.cy + 26}
               stroke="rgba(52,211,153,0.3)" strokeWidth="1" strokeDasharray="2 2"
             />
-            {/* Label */}
             <text
+              className="hidden-mobile-svg"
               x={n.cx} y={n.above ? n.cy - 32 : n.cy + 38}
               textAnchor="middle"
               fontSize="9"
@@ -393,30 +349,120 @@ function FunnelWave() {
           </g>
         ))}
       </svg>
+    </div>
+  );
 
-      {/* Right chip — revenue counter */}
-      <div
-        className="absolute right-0 flex items-center gap-3 rounded-2xl border px-4 py-3"
-        style={{
-          top: H / 2 - 4,
-          borderColor: 'rgba(52,211,153,0.2)',
-          background: 'rgba(6,6,6,0.82)',
-          backdropFilter: 'blur(16px)',
-          boxShadow: '0 0 0 1px rgba(52,211,153,0.06), 0 8px 32px rgba(0,0,0,0.6), 0 0 24px rgba(52,211,153,0.08)',
-        }}
-      >
-        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-400/10 border border-emerald-400/20">
-          <TrendingUp size={13} className="text-emerald-400" />
+  return (
+    <div className="reveal w-full max-w-5xl mx-auto mt-16 select-none">
+      {/* Mobile: chips stacked above and below wave */}
+      {/* Desktop: chips absolutely positioned over wave */}
+
+      {/* --- DESKTOP layout (md+) --- */}
+      <div className="hidden md:block relative" style={{ height: H + 80 }}>
+        <div className="absolute inset-0">
+          {svgSection}
         </div>
-        <div>
-          <div className="font-mono text-[9px] uppercase tracking-[0.16em] text-white/35">conversões</div>
-          <div className="font-mono text-[15px] font-medium text-emerald-400 leading-tight tabular-nums">
-            R$ {revenue.toLocaleString('pt-BR')}
+
+        {/* Left chip */}
+        <div
+          className="absolute left-0 flex items-center gap-2.5 rounded-full border px-3.5 py-2"
+          style={{
+            top: H / 2 + 10,
+            borderColor: 'rgba(255,255,255,0.08)',
+            background: 'rgba(10,10,10,0.75)',
+            backdropFilter: 'blur(14px)',
+            boxShadow: '0 0 0 1px rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.5)',
+          }}
+        >
+          <div className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-50" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
           </div>
+          <MessageCircle size={13} className="text-white/50" />
+          <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/45">leads entrando</span>
+        </div>
+
+        {/* Right chip */}
+        <div
+          className="absolute right-0 flex items-center gap-3 rounded-2xl border px-4 py-3"
+          style={{
+            top: H / 2 - 4,
+            borderColor: 'rgba(52,211,153,0.2)',
+            background: 'rgba(6,6,6,0.82)',
+            backdropFilter: 'blur(16px)',
+            boxShadow: '0 0 0 1px rgba(52,211,153,0.06), 0 8px 32px rgba(0,0,0,0.6), 0 0 24px rgba(52,211,153,0.08)',
+          }}
+        >
+          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-400/10 border border-emerald-400/20">
+            <TrendingUp size={13} className="text-emerald-400" />
+          </div>
+          <div>
+            <div className="font-mono text-[9px] uppercase tracking-[0.16em] text-white/35">conversões</div>
+            <div className="font-mono text-[15px] font-medium text-emerald-400 leading-tight tabular-nums">
+              R$ {revenue.toLocaleString('pt-BR')}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* --- MOBILE layout (< md) --- */}
+      <div className="md:hidden flex flex-col items-center gap-4">
+        {/* Wave — full width, compact */}
+        <div className="w-full" style={{ height: H }}>
+          {svgSection}
+        </div>
+
+        {/* Chips side by side below wave */}
+        <div className="flex items-center justify-center gap-3 w-full px-2">
+          {/* Left chip */}
+          <div
+            className="flex items-center gap-2 rounded-full border px-3 py-1.5"
+            style={{
+              borderColor: 'rgba(255,255,255,0.08)',
+              background: 'rgba(10,10,10,0.75)',
+              backdropFilter: 'blur(14px)',
+            }}
+          >
+            <div className="relative flex h-1.5 w-1.5">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-50" />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
+            </div>
+            <MessageCircle size={11} className="text-white/50" />
+            <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-white/45">leads entrando</span>
+          </div>
+
+          {/* Right chip */}
+          <div
+            className="flex items-center gap-2 rounded-xl border px-3 py-1.5"
+            style={{
+              borderColor: 'rgba(52,211,153,0.2)',
+              background: 'rgba(6,6,6,0.82)',
+              backdropFilter: 'blur(16px)',
+            }}
+          >
+            <TrendingUp size={11} className="text-emerald-400" />
+            <div>
+              <div className="font-mono text-[8px] uppercase tracking-[0.14em] text-white/35 leading-none">conversões</div>
+              <div className="font-mono text-[12px] font-medium text-emerald-400 leading-tight tabular-nums">
+                R$ {revenue.toLocaleString('pt-BR')}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Node labels row on mobile */}
+        <div className="flex items-center justify-center gap-4 flex-wrap px-4">
+          {NODES.map((n) => (
+            <div key={n.label} className="flex items-center gap-1.5">
+              <span className="h-1 w-1 rounded-full bg-emerald-400/70" />
+              <span className="font-mono text-[8px] uppercase tracking-[0.14em] text-white/35">{n.label}</span>
+            </div>
+          ))}
         </div>
       </div>
     </div>
   );
+
 }
 
 function Hero() {
