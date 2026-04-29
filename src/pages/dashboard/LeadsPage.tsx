@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Search, Tag as TagIcon, Phone } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Plus, Search, Tag as TagIcon, Phone, MessageCircle } from 'lucide-react';
 import {
   DndContext,
   DragOverlay,
@@ -28,7 +29,27 @@ import { LeadDetailsDrawer } from '../../components/chat/LeadDetailsDrawer';
 
 type LeadPatch = Partial<Lead> & { id: string };
 
-function DraggableCard({ lead, onOpen }: { lead: Lead; onOpen: () => void }) {
+function LeadAvatar({ lead }: { lead: Lead }) {
+  const [imgError, setImgError] = useState(false);
+  const initials = leadDisplayName(lead).slice(0, 2).toUpperCase();
+  if (lead.profile_picture_url && !imgError) {
+    return (
+      <img
+        src={lead.profile_picture_url}
+        alt={leadDisplayName(lead)}
+        onError={() => setImgError(true)}
+        className="w-8 h-8 rounded-full object-cover shrink-0 border border-white/10"
+      />
+    );
+  }
+  return (
+    <div className="w-8 h-8 rounded-full shrink-0 bg-white/[0.06] border border-white/10 flex items-center justify-center text-[11px] font-medium text-white/70">
+      {initials}
+    </div>
+  );
+}
+
+function DraggableCard({ lead, onOpen, onChat }: { lead: Lead; onOpen: () => void; onChat: () => void }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: lead.id,
     data: { lead },
@@ -36,44 +57,68 @@ function DraggableCard({ lead, onOpen }: { lead: Lead; onOpen: () => void }) {
   const style = isDragging ? { opacity: 0.3 } : undefined;
   return (
     <div ref={setNodeRef} style={style} className="tilt-card">
-      <button
-        type="button"
-        onClick={onOpen}
-        {...listeners}
-        {...attributes}
-        className="glass w-full text-left rounded-2xl p-3.5 hover:border-white/[0.14] transition-colors cursor-grab active:cursor-grabbing"
+      <div
+        className="glass w-full text-left rounded-2xl p-3.5 hover:border-white/[0.14] transition-colors"
       >
-        <div className="flex items-start justify-between gap-2">
-          <h4 className="text-[14px] font-medium text-white leading-tight truncate">
-            {leadDisplayName(lead)}
-          </h4>
-          {lead.unread_count && lead.unread_count > 0 ? (
-            <span className="shrink-0 font-mono text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-white text-black">
-              {lead.unread_count}
-            </span>
-          ) : null}
-        </div>
-        <div className="mt-1.5 flex items-center gap-1.5 text-[11px] text-white/45">
-          <Phone size={10} strokeWidth={1.5} />
-          <span className="truncate">{leadPhoneLabel(lead)}</span>
-        </div>
-        {lead.last_message && (
-          <p className="mt-2 text-[12px] text-white/55 line-clamp-2 leading-snug">{lead.last_message}</p>
-        )}
-        {lead.tags && lead.tags.length > 0 && (
-          <div className="mt-2.5 flex flex-wrap gap-1">
-            {lead.tags.slice(0, 3).map((t) => (
-              <span
-                key={t}
-                className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-md bg-white/[0.05] border border-white/10 text-white/65"
-              >
-                <TagIcon size={8} strokeWidth={1.5} />
-                {t}
+        {/* Header row: avatar + name + unread + chat btn */}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={onOpen}
+            {...listeners}
+            {...attributes}
+            className="flex items-center gap-2 flex-1 min-w-0 cursor-grab active:cursor-grabbing"
+          >
+            <LeadAvatar lead={lead} />
+            <h4 className="text-[14px] font-medium text-white leading-tight truncate flex-1">
+              {leadDisplayName(lead)}
+            </h4>
+          </button>
+          <div className="flex items-center gap-1.5 shrink-0">
+            {lead.unread_count && lead.unread_count > 0 ? (
+              <span className="font-mono text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-white text-black">
+                {lead.unread_count}
               </span>
-            ))}
+            ) : null}
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onChat(); }}
+              title="Abrir conversa"
+              className="p-1.5 rounded-lg text-white/40 hover:text-white hover:bg-white/10 transition-colors"
+            >
+              <MessageCircle size={14} strokeWidth={1.5} />
+            </button>
           </div>
-        )}
-      </button>
+        </div>
+
+        {/* Rest of card — clickable to open details */}
+        <button
+          type="button"
+          onClick={onOpen}
+          className="w-full text-left"
+        >
+          <div className="mt-1.5 flex items-center gap-1.5 text-[11px] text-white/45">
+            <Phone size={10} strokeWidth={1.5} />
+            <span className="truncate">{leadPhoneLabel(lead)}</span>
+          </div>
+          {lead.last_message && (
+            <p className="mt-2 text-[12px] text-white/55 line-clamp-2 leading-snug">{lead.last_message}</p>
+          )}
+          {lead.tags && lead.tags.length > 0 && (
+            <div className="mt-2.5 flex flex-wrap gap-1">
+              {lead.tags.slice(0, 3).map((t) => (
+                <span
+                  key={t}
+                  className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-md bg-white/[0.05] border border-white/10 text-white/65"
+                >
+                  <TagIcon size={8} strokeWidth={1.5} />
+                  {t}
+                </span>
+              ))}
+            </div>
+          )}
+        </button>
+      </div>
     </div>
   );
 }
@@ -82,10 +127,12 @@ function Column({
   category,
   leads,
   onOpen,
+  onChat,
 }: {
   category: LeadCategoryRow;
   leads: Lead[];
   onOpen: (l: Lead) => void;
+  onChat: (l: Lead) => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: category.key });
   const Icon = resolveIcon(category.icon);
@@ -111,7 +158,14 @@ function Column({
             Arraste leads para cá
           </div>
         ) : (
-          leads.map((l) => <DraggableCard key={l.id} lead={l} onOpen={() => onOpen(l)} />)
+          leads.map((l) => (
+            <DraggableCard
+              key={l.id}
+              lead={l}
+              onOpen={() => onOpen(l)}
+              onChat={() => onChat(l)}
+            />
+          ))
         )}
       </div>
     </div>
@@ -121,6 +175,7 @@ function Column({
 export function LeadsPage() {
   usePageTitle('Gestão de Leads — BrainLead');
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { categories } = useLeadCategories();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
@@ -290,6 +345,7 @@ export function LeadsPage() {
                   category={cat}
                   leads={grouped.get(cat.key) ?? []}
                   onOpen={setSelectedLead}
+                  onChat={(l) => navigate(`/dashboard/leads?lead=${l.id}`)}
                 />
               ))}
             </div>

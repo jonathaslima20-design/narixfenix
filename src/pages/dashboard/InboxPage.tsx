@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, MessageCircle } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../lib/AuthContext';
 import { useInstances } from '../../lib/useInstances';
@@ -17,13 +18,22 @@ export function InboxPage() {
   usePageTitle('Inbox — BrainLead');
   const { user } = useAuth();
   const { instances } = useInstances();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(searchParams.get('lead'));
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<Filter>('all');
   const [instanceFilter, setInstanceFilter] = useState<string>('all');
   const [detailsOpen, setDetailsOpen] = useState(false);
+
+  useEffect(() => {
+    const leadParam = searchParams.get('lead');
+    if (leadParam && leadParam !== selectedId) {
+      setSelectedId(leadParam);
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (!user?.id) return;
