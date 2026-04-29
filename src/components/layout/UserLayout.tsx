@@ -75,7 +75,7 @@ function UserLayoutInner() {
             <Menu size={20} />
           </button>
         </div>
-        <main className="flex-1 min-h-0 relative">
+        <main className="flex-1 min-h-0 relative flex flex-col">
           <Outlet />
         </main>
         <div className="py-6 flex items-center justify-center gap-2 lg:hidden">
