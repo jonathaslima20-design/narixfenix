@@ -11,11 +11,12 @@ import {
   Flame,
   Thermometer,
   Snowflake,
-  User,
   DollarSign,
   ShoppingCart,
   Send,
   CheckCheck,
+  MessageCircle,
+  TrendingUp,
 } from 'lucide-react';
 
 function useMouseSpotlight() {
@@ -150,106 +151,201 @@ function Header() {
   );
 }
 
-const WAVE_W = 900;
-const WAVE_H = 120;
-const WAVE_PATH = `M 0 ${WAVE_H / 2}
-  C 80 ${WAVE_H / 2 - 38}, 140 ${WAVE_H / 2 + 38}, 220 ${WAVE_H / 2}
-  C 300 ${WAVE_H / 2 - 38}, 360 ${WAVE_H / 2 + 38}, 450 ${WAVE_H / 2}
-  C 540 ${WAVE_H / 2 - 38}, 600 ${WAVE_H / 2 + 38}, 680 ${WAVE_H / 2}
-  C 760 ${WAVE_H / 2 - 38}, 820 ${WAVE_H / 2 + 38}, ${WAVE_W} ${WAVE_H / 2 - 8}`;
+const W = 1000;
+const H = 160;
+const MID = H / 2;
 
-const ANCHOR_POINTS = [
-  { cx: 220, cy: WAVE_H / 2, delay: 0 },
-  { cx: 310, cy: WAVE_H / 2 + 35, delay: 0.4 },
-  { cx: 450, cy: WAVE_H / 2, delay: 0.8 },
-  { cx: 590, cy: WAVE_H / 2 - 35, delay: 0.3 },
-  { cx: 680, cy: WAVE_H / 2, delay: 0.6 },
+// Main wave path — varied amplitudes for natural rhythm
+const MAIN_PATH = `M 0 ${MID}
+  C 60 ${MID - 20}, 110 ${MID + 52}, 190 ${MID + 18}
+  C 270 ${MID - 15}, 310 ${MID - 55}, 400 ${MID - 28}
+  C 490 ${MID - 2}, 530 ${MID + 48}, 610 ${MID + 22}
+  C 690 ${MID - 4}, 740 ${MID - 50}, 820 ${MID - 30}
+  C 900 ${MID - 10}, 950 ${MID + 14}, ${W} ${MID - 4}`;
+
+// Ghost echo — same shape, offset up slightly, low opacity
+const ECHO_PATH = `M 0 ${MID - 14}
+  C 60 ${MID - 34}, 110 ${MID + 38}, 190 ${MID + 4}
+  C 270 ${MID - 29}, 310 ${MID - 69}, 400 ${MID - 42}
+  C 490 ${MID - 16}, 530 ${MID + 34}, 610 ${MID + 8}
+  C 690 ${MID - 18}, 740 ${MID - 64}, 820 ${MID - 44}
+  C 900 ${MID - 24}, 950 ${MID}, ${W} ${MID - 18}`;
+
+const NODES: { cx: number; cy: number; delay: number; label: string; above: boolean }[] = [
+  { cx: 190, cy: MID + 18,  delay: 0.1, label: 'captado',     above: false },
+  { cx: 400, cy: MID - 28,  delay: 0.5, label: 'qualificado', above: true  },
+  { cx: 610, cy: MID + 22,  delay: 0.9, label: 'proposta',    above: false },
+  { cx: 820, cy: MID - 30,  delay: 1.3, label: 'fechado',     above: true  },
 ];
 
+function useCounter(target: number, duration = 1800, startDelay = 1200) {
+  const [value, setValue] = useState(0);
+  useEffect(() => {
+    let t: ReturnType<typeof setTimeout>;
+    t = setTimeout(() => {
+      const start = performance.now();
+      const step = (now: number) => {
+        const p = Math.min((now - start) / duration, 1);
+        const ease = 1 - Math.pow(1 - p, 3);
+        setValue(Math.round(ease * target));
+        if (p < 1) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    }, startDelay);
+    return () => clearTimeout(t);
+  }, [target, duration, startDelay]);
+  return value;
+}
+
 function FunnelWave() {
+  const revenue = useCounter(49300);
+
   return (
-    <div className="reveal relative w-full max-w-5xl mx-auto mt-16 select-none" style={{ height: WAVE_H + 60 }}>
-      {/* Dot grid background */}
+    <div
+      className="reveal relative w-full max-w-5xl mx-auto mt-16 select-none"
+      style={{ height: H + 80 }}
+    >
+      {/* Dot grid with radial mask so edges dissolve */}
       <div
-        className="pointer-events-none absolute inset-0 rounded-3xl"
+        className="pointer-events-none absolute inset-0"
         style={{
-          backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px)',
-          backgroundSize: '24px 24px',
+          backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.055) 1px, transparent 1px)',
+          backgroundSize: '28px 28px',
+          WebkitMaskImage: 'radial-gradient(ellipse 80% 70% at 50% 50%, black 40%, transparent 100%)',
+          maskImage: 'radial-gradient(ellipse 80% 70% at 50% 50%, black 40%, transparent 100%)',
         }}
       />
 
-      {/* Left fade */}
-      <div className="pointer-events-none absolute inset-y-0 left-0 w-24 rounded-l-3xl" style={{ background: 'linear-gradient(to right, #050505, transparent)' }} />
-      {/* Right fade */}
-      <div className="pointer-events-none absolute inset-y-0 right-0 w-24 rounded-r-3xl" style={{ background: 'linear-gradient(to left, #050505, transparent)' }} />
+      {/* Ambient glow under wave center */}
+      <div
+        className="pointer-events-none absolute"
+        style={{
+          left: '20%', right: '20%', top: '30%', bottom: '10%',
+          background: 'radial-gradient(ellipse at center, rgba(52,211,153,0.06) 0%, transparent 70%)',
+          filter: 'blur(16px)',
+        }}
+      />
 
-      {/* Avatars — left anchor */}
-      <div className="absolute left-0 flex items-end gap-0" style={{ bottom: 16, transform: 'translateX(-8px)' }}>
-        {[{ size: 36, offset: 0 }, { size: 40, offset: -8 }, { size: 34, offset: -16 }, { size: 32, offset: -6 }].map((a, i) => (
-          <div
-            key={i}
-            className="rounded-full bg-neutral-800 border border-white/[0.13] flex items-center justify-center"
-            style={{
-              width: a.size,
-              height: a.size,
-              marginLeft: i === 0 ? 0 : -10,
-              zIndex: 4 - i,
-              marginBottom: a.offset < -10 ? 4 : 0,
-            }}
-          >
-            <User size={a.size * 0.48} className="text-white/35" />
-          </div>
-        ))}
+      {/* Edge fades */}
+      <div className="pointer-events-none absolute inset-y-0 left-0 w-32" style={{ background: 'linear-gradient(to right, #050505 40%, transparent)' }} />
+      <div className="pointer-events-none absolute inset-y-0 right-0 w-32" style={{ background: 'linear-gradient(to left, #050505 40%, transparent)' }} />
+
+      {/* Left chip — leads source */}
+      <div
+        className="absolute left-0 flex items-center gap-2.5 rounded-full border px-3.5 py-2"
+        style={{
+          top: H / 2 + 10,
+          borderColor: 'rgba(255,255,255,0.08)',
+          background: 'rgba(10,10,10,0.75)',
+          backdropFilter: 'blur(14px)',
+          boxShadow: '0 0 0 1px rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.5)',
+        }}
+      >
+        <div className="relative flex h-2 w-2">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-50" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+        </div>
+        <MessageCircle size={13} className="text-white/50" />
+        <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/45">leads entrando</span>
       </div>
 
       {/* SVG wave */}
       <svg
-        viewBox={`0 0 ${WAVE_W} ${WAVE_H}`}
+        viewBox={`0 0 ${W} ${H}`}
         preserveAspectRatio="none"
         className="absolute inset-x-0 w-full"
-        style={{ height: WAVE_H, top: 30 }}
+        style={{ height: H, top: 40 }}
         xmlns="http://www.w3.org/2000/svg"
       >
         <defs>
-          <filter id="glow-em">
-            <feGaussianBlur stdDeviation="3" result="blur" />
-            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+          {/* Gradient along wave: cool white → emerald */}
+          <linearGradient id="wave-grad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%"   stopColor="rgba(255,255,255,0.25)" />
+            <stop offset="45%"  stopColor="rgba(52,211,153,0.7)" />
+            <stop offset="100%" stopColor="#34d399" />
+          </linearGradient>
+
+          <linearGradient id="echo-grad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%"   stopColor="rgba(255,255,255,0.04)" />
+            <stop offset="100%" stopColor="rgba(52,211,153,0.08)" />
+          </linearGradient>
+
+          {/* Soft glow filter */}
+          <filter id="wave-glow" x="-5%" y="-50%" width="110%" height="200%">
+            <feGaussianBlur stdDeviation="4" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
           </filter>
+
+          {/* Node ring glow */}
+          <filter id="node-glow" x="-100%" y="-100%" width="300%" height="300%">
+            <feGaussianBlur stdDeviation="2.5" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+
           <style>{`
             @keyframes flowDash {
-              from { stroke-dashoffset: 1200; }
+              from { stroke-dashoffset: 2200; }
               to   { stroke-dashoffset: 0; }
             }
-            @keyframes waveNodePulse {
-              0%, 100% { r: 4; opacity: 0.7; }
-              50%       { r: 6; opacity: 1; }
+            @keyframes echoFlow {
+              from { stroke-dashoffset: 2200; }
+              to   { stroke-dashoffset: 0; }
+            }
+            @keyframes nodeRingPulse {
+              0%, 100% { r: 9; opacity: 0.15; }
+              50%       { r: 13; opacity: 0.28; }
+            }
+            @keyframes nodeDotPulse {
+              0%, 100% { r: 3.5; }
+              50%       { r: 5; }
+            }
+            @keyframes labelFade {
+              from { opacity: 0; transform: translateY(4px); }
+              to   { opacity: 1; transform: translateY(0); }
             }
           `}</style>
         </defs>
 
-        {/* Glow layer */}
+        {/* Echo / shadow wave */}
         <path
-          d={WAVE_PATH}
+          d={ECHO_PATH}
           fill="none"
-          stroke="rgba(52,211,153,0.18)"
-          strokeWidth="8"
-          filter="url(#glow-em)"
+          stroke="url(#echo-grad)"
+          strokeWidth="1"
+          strokeLinecap="round"
+          strokeDasharray="2200"
+          style={{ animation: 'echoFlow 3.4s cubic-bezier(0.4,0,0.2,1) 0.3s forwards', opacity: 0 }}
+        />
+
+        {/* Glow halo behind main line */}
+        <path
+          d={MAIN_PATH}
+          fill="none"
+          stroke="rgba(52,211,153,0.22)"
+          strokeWidth="10"
+          filter="url(#wave-glow)"
         />
 
         {/* Main wave line */}
         <path
-          d={WAVE_PATH}
+          d={MAIN_PATH}
           fill="none"
-          stroke="#34d399"
+          stroke="url(#wave-grad)"
           strokeWidth="1.5"
           strokeLinecap="round"
-          strokeDasharray="1200"
+          strokeDasharray="2200"
           style={{ animation: 'flowDash 2.8s cubic-bezier(0.4,0,0.2,1) forwards' }}
         />
 
-        {/* Arrow at end */}
+        {/* Arrowhead at end */}
         <polyline
-          points={`${WAVE_W - 18},${WAVE_H / 2 - 16} ${WAVE_W},${WAVE_H / 2 - 8} ${WAVE_W - 18},${WAVE_H / 2}`}
+          points={`${W - 16},${MID - 4 - 10} ${W},${MID - 4} ${W - 16},${MID - 4 + 10}`}
           fill="none"
           stroke="#34d399"
           strokeWidth="1.5"
@@ -257,33 +353,67 @@ function FunnelWave() {
           strokeLinejoin="round"
         />
 
-        {/* Anchor points */}
-        {ANCHOR_POINTS.map((p, i) => (
-          <circle
-            key={i}
-            cx={p.cx}
-            cy={p.cy}
-            r={4}
-            fill="#34d399"
-            style={{ animation: `waveNodePulse 2s ease-in-out ${p.delay}s infinite` }}
-          />
+        {/* Nodes with labels */}
+        {NODES.map((n, i) => (
+          <g key={i}>
+            {/* Pulsing ring */}
+            <circle
+              cx={n.cx} cy={n.cy} r={9}
+              fill="rgba(52,211,153,0.15)"
+              filter="url(#node-glow)"
+              style={{ animation: `nodeRingPulse 2.4s ease-in-out ${n.delay}s infinite` }}
+            />
+            {/* Inner dot */}
+            <circle
+              cx={n.cx} cy={n.cy} r={3.5}
+              fill="#34d399"
+              style={{ animation: `nodeDotPulse 2.4s ease-in-out ${n.delay}s infinite` }}
+            />
+            {/* Tick mark connecting to label */}
+            <line
+              x1={n.cx} y1={n.above ? n.cy - 13 : n.cy + 13}
+              x2={n.cx} y2={n.above ? n.cy - 26 : n.cy + 26}
+              stroke="rgba(52,211,153,0.3)" strokeWidth="1" strokeDasharray="2 2"
+            />
+            {/* Label */}
+            <text
+              x={n.cx} y={n.above ? n.cy - 32 : n.cy + 38}
+              textAnchor="middle"
+              fontSize="9"
+              letterSpacing="0.14em"
+              fill="rgba(255,255,255,0.38)"
+              fontFamily="'JetBrains Mono', 'Fira Mono', monospace"
+              style={{
+                textTransform: 'uppercase',
+                animation: `labelFade 0.5s ease-out ${n.delay + 0.3}s both`,
+              }}
+            >
+              {n.label}
+            </text>
+          </g>
         ))}
       </svg>
 
-      {/* Conversion icon — right anchor */}
+      {/* Right chip — revenue counter */}
       <div
-        className="absolute right-0 flex items-center gap-2 rounded-full border px-4 py-2"
+        className="absolute right-0 flex items-center gap-3 rounded-2xl border px-4 py-3"
         style={{
-          top: 30 + WAVE_H / 2 - 8 - 22,
-          borderColor: 'rgba(52,211,153,0.3)',
-          background: 'rgba(0,0,0,0.6)',
-          backdropFilter: 'blur(12px)',
-          boxShadow: '0 0 20px rgba(52,211,153,0.12)',
+          top: H / 2 - 4,
+          borderColor: 'rgba(52,211,153,0.2)',
+          background: 'rgba(6,6,6,0.82)',
+          backdropFilter: 'blur(16px)',
+          boxShadow: '0 0 0 1px rgba(52,211,153,0.06), 0 8px 32px rgba(0,0,0,0.6), 0 0 24px rgba(52,211,153,0.08)',
         }}
       >
-        <DollarSign size={16} className="text-emerald-400" />
-        <div className="w-px h-4 bg-white/10" />
-        <ShoppingCart size={16} className="text-emerald-400" />
+        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-400/10 border border-emerald-400/20">
+          <TrendingUp size={13} className="text-emerald-400" />
+        </div>
+        <div>
+          <div className="font-mono text-[9px] uppercase tracking-[0.16em] text-white/35">conversões</div>
+          <div className="font-mono text-[15px] font-medium text-emerald-400 leading-tight tabular-nums">
+            R$ {revenue.toLocaleString('pt-BR')}
+          </div>
+        </div>
       </div>
     </div>
   );
