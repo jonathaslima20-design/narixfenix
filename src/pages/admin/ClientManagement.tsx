@@ -85,6 +85,7 @@ export function ClientManagement() {
   const { plans } = usePlans();
   const [clients, setClients] = useState<ClientRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [filterPlan, setFilterPlan] = useState('all');
   const [filterSubStatus, setFilterSubStatus] = useState('all');
@@ -94,7 +95,9 @@ export function ClientManagement() {
   const [bulkLoading, setBulkLoading] = useState(false);
 
   useEffect(() => {
-    loadClients();
+    // Small delay to ensure session token is propagated to RPC context
+    const t = setTimeout(() => loadClients(), 100);
+    return () => clearTimeout(t);
   }, []);
 
   function toggleSelect(id: string) {
@@ -176,8 +179,20 @@ export function ClientManagement() {
 
   async function loadClients() {
     setLoading(true);
+    setLoadError(null);
     const { data, error } = await supabase.rpc('admin_list_clients_with_stats');
-    if (error || !data) { setClients([]); setLoading(false); return; }
+    if (error) {
+      console.error('[ClientManagement] RPC error:', error);
+      setLoadError(error.message ?? 'Erro desconhecido ao carregar clientes.');
+      setClients([]);
+      setLoading(false);
+      return;
+    }
+    if (!data || !Array.isArray(data)) {
+      setClients([]);
+      setLoading(false);
+      return;
+    }
     const rows = (data as Array<Record<string, unknown>>).map((r) => ({
       id: r.id as string,
       email: r.email as string,
@@ -353,7 +368,19 @@ export function ClientManagement() {
             </div>
           )}
 
-          {loading ? (
+          {loadError ? (
+            <Card className="text-center py-16">
+              <p className="text-sm text-red-400 mb-2">Erro ao carregar clientes</p>
+              <p className="text-xs text-white/40 mb-4 font-mono">{loadError}</p>
+              <button
+                onClick={loadClients}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-white/[0.06] text-white/70 hover:bg-white/[0.10] transition-colors"
+              >
+                <RefreshCw size={14} />
+                Tentar novamente
+              </button>
+            </Card>
+          ) : loading ? (
             <div className="space-y-3">
               {[...Array(6)].map((_, i) => (
                 <div key={i} className="h-20 bg-white/[0.04] rounded-2xl border border-white/[0.08] animate-pulse" />
