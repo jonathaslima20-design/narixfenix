@@ -7,4 +7,18 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'supabase': ['@supabase/supabase-js'],
+          'motion': ['framer-motion'],
+          'charts': ['recharts'],
+          'virtuoso': ['react-virtuoso'],
+          'dnd': ['@dnd-kit/core'],
+        },
+      },
+    },
+  },
 });

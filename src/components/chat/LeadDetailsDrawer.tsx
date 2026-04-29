@@ -41,11 +41,12 @@ export function LeadDetailsDrawer({ open, onClose, lead, userId, onLeadUpdated, 
 
   useEffect(() => {
     if (!lead || !open) return;
+    const leadId = lead.id;
     if (tab === 'notes') {
       supabase
         .from('lead_notes')
         .select('*')
-        .eq('lead_id', lead.id)
+        .eq('lead_id', leadId)
         .order('created_at', { ascending: false })
         .then(({ data }) => setNotes((data as LeadNote[]) || []));
     }
@@ -53,12 +54,12 @@ export function LeadDetailsDrawer({ open, onClose, lead, userId, onLeadUpdated, 
       supabase
         .from('lead_activities')
         .select('*')
-        .eq('lead_id', lead.id)
+        .eq('lead_id', leadId)
         .order('created_at', { ascending: false })
         .limit(50)
         .then(({ data }) => setActivities((data as LeadActivity[]) || []));
     }
-  }, [lead, tab, open]);
+  }, [lead?.id, tab, open]);
 
   if (!lead) return null;
 

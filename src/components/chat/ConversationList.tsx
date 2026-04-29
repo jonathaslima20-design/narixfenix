@@ -86,15 +86,19 @@ export function ConversationList({
     }
   }, [leads]);
 
-  function getCatIcon(lead: Lead) {
-    const cat = categories.find((c) => c.key === lead.category);
-    if (cat) {
+  const categoryMap = useMemo(() => {
+    const fallback = { Icon: resolveIcon('CircleDot'), color: 'text-white/40' };
+    const map = new Map<string, { Icon: ReturnType<typeof resolveIcon>; color: string }>();
+    for (const cat of categories) {
       const Icon = resolveIcon(cat.icon);
       const color = cat.color.split(' ')[1] || 'text-white/55';
-      return { Icon, color };
+      map.set(cat.key, { Icon, color });
     }
-    const fallback = resolveIcon('CircleDot');
-    return { Icon: fallback, color: 'text-white/40' };
+    return { map, fallback };
+  }, [categories]);
+
+  function getCatIcon(lead: Lead) {
+    return categoryMap.map.get(lead.category ?? '') ?? categoryMap.fallback;
   }
 
   return (
@@ -159,20 +163,17 @@ export function ConversationList({
               const active = selectedId === lead.id;
               const unread = (lead.unread_count ?? 0) > 0;
               const isFlashing = flashing.has(lead.id);
+              const bgStyle = isFlashing
+                ? { backgroundColor: 'rgba(16, 185, 129, 0.08)' }
+                : active
+                ? { backgroundColor: 'rgba(255, 255, 255, 0.10)' }
+                : undefined;
               return (
-                <motion.button
-                  initial={false}
-                  animate={{
-                    backgroundColor: isFlashing
-                      ? 'rgba(16, 185, 129, 0.08)'
-                      : active
-                      ? 'rgba(255, 255, 255, 0.10)'
-                      : 'rgba(255, 255, 255, 0)',
-                  }}
-                  transition={{ backgroundColor: { duration: 0.6 } }}
+                <button
+                  style={{ transition: 'background-color 600ms', ...bgStyle }}
                   onClick={() => onSelect(lead)}
                   aria-label={`Conversa com ${leadDisplayName(lead)}${unread ? `, ${lead.unread_count} novas mensagens` : ''}`}
-                  className={`w-full flex items-center gap-3 px-4 py-3 border-b border-white/[0.04] text-left transition-colors ${
+                  className={`w-full flex items-center gap-3 px-4 py-3 border-b border-white/[0.04] text-left ${
                     active ? '' : 'hover:bg-white/[0.04]'
                   }`}
                 >
@@ -181,6 +182,8 @@ export function ConversationList({
                       <img
                         src={lead.profile_picture_url}
                         alt={leadDisplayName(lead)}
+                        loading="lazy"
+                        decoding="async"
                         className={`w-11 h-11 rounded-full object-cover bg-white/[0.06] ${
                           unread ? 'ring-2 ring-emerald-500 ring-offset-2' : ''
                         }`}
@@ -247,7 +250,7 @@ export function ConversationList({
                       )}
                     </div>
                   </div>
-                </motion.button>
+                </button>
               );
             }}
           />

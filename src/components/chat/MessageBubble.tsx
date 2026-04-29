@@ -101,7 +101,7 @@ export function MessageBubble({ message, errorDetail, onRetry, onDelete }: Props
               </div>
             )}
             {message.media_url && message.media_type.startsWith('image') && (
-              <img src={message.media_url} alt="" className="rounded-xl mb-1.5 max-h-64 w-full object-cover" />
+              <img src={message.media_url} alt="" loading="lazy" decoding="async" className="rounded-xl mb-1.5 max-h-64 w-full object-cover" />
             )}
             {message.media_type === 'audio' && (
               <div className="mb-1">

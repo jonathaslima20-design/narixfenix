@@ -784,6 +784,8 @@ export function ChatPanel({ lead, userId, sendMode, onOpenDetails, onLeadUpdated
             <img
               src={lead.profile_picture_url}
               alt={leadDisplayName(lead)}
+              loading="lazy"
+              decoding="async"
               className="w-10 h-10 rounded-full object-cover bg-white/[0.06]"
               onError={(e) => {
                 (e.currentTarget as HTMLImageElement).style.display = 'none';
