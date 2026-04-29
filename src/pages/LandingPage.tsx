@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode, type MouseEvent } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Brain,
   MessageSquare,
@@ -10,7 +11,6 @@ import {
   CheckCheck,
   Circle,
 } from 'lucide-react';
-import { supabase } from '../lib/supabase';
 
 function useMouseSpotlight() {
   useEffect(() => {
@@ -132,19 +132,19 @@ function Header() {
           </a>
         </nav>
 
-        <a
-          href="#planos"
+        <Link
+          to="/cadastro"
           className="beam relative rounded-full px-4 py-2 text-[14px] font-medium text-white/90 bg-white/[0.03] border border-white/10"
           style={{ letterSpacing: '-0.01em' }}
         >
           Começar agora
-        </a>
+        </Link>
       </div>
     </header>
   );
 }
 
-function Hero({ onOpenLead }: { onOpenLead: () => void }) {
+function Hero() {
   return (
     <section className="relative pt-48 pb-32 px-6">
       <div className="mx-auto max-w-6xl flex flex-col items-center text-center">
@@ -171,11 +171,11 @@ function Hero({ onOpenLead }: { onOpenLead: () => void }) {
         </p>
 
         <div className="reveal mt-10 flex flex-wrap items-center justify-center gap-3">
-          <button onClick={onOpenLead} className="cta-primary group">
+          <Link to="/cadastro" className="cta-primary group">
             <span>Começar gratuitamente</span>
             <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
-          </button>
-          <a href="#planos" className="ghost-btn">Ver planos</a>
+          </Link>
+          <Link to="/login" className="ghost-btn">Ver planos</Link>
         </div>
 
         <div className="reveal mt-20 w-full">
@@ -453,7 +453,7 @@ function HowItWorks() {
   );
 }
 
-function Pricing({ onOpenLead }: { onOpenLead: () => void }) {
+function Pricing() {
   const plans = [
     {
       name: 'Trial',
@@ -526,12 +526,12 @@ function Pricing({ onOpenLead }: { onOpenLead: () => void }) {
                   ))}
                 </ul>
 
-                <button
-                  onClick={onOpenLead}
+                <Link
+                  to="/cadastro"
                   className={p.variant === 'primary' ? 'cta-primary mt-6 w-full justify-center' : 'ghost-btn mt-6 w-full justify-center'}
                 >
                   {p.cta}
-                </button>
+                </Link>
               </div>
             </Tilt>
           ))}
@@ -541,7 +541,7 @@ function Pricing({ onOpenLead }: { onOpenLead: () => void }) {
   );
 }
 
-function Closing({ onOpenLead }: { onOpenLead: () => void }) {
+function Closing() {
   return (
     <section className="relative px-6 py-32">
       <div className="mx-auto max-w-6xl text-center reveal">
@@ -553,10 +553,10 @@ function Closing({ onOpenLead }: { onOpenLead: () => void }) {
           <span className="block italic-silver">vender mais?</span>
         </h2>
         <div className="mt-10">
-          <button onClick={onOpenLead} className="cta-primary group">
+          <Link to="/cadastro" className="cta-primary group">
             <span>Começar gratuitamente</span>
             <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
-          </button>
+          </Link>
         </div>
       </div>
     </section>
@@ -593,98 +593,7 @@ function Footer() {
   );
 }
 
-function LeadModal({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const [email, setEmail] = useState('');
-  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [open, onClose]);
-
-  if (!open) return null;
-
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email || !email.includes('@')) {
-      setError('Informe um e-mail válido');
-      setStatus('error');
-      return;
-    }
-    setStatus('loading');
-    setError('');
-    const { error: err } = await supabase.from('landing_leads').insert({ email, source: 'landing' });
-    if (err) {
-      setError('Não foi possível enviar. Tente novamente.');
-      setStatus('error');
-      return;
-    }
-    setStatus('success');
-  };
-
-  return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      className="fixed inset-0 z-[100] flex items-center justify-center px-6"
-      onClick={onClose}
-    >
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-md" />
-      <div
-        className="glass relative z-10 w-full max-w-md rounded-3xl p-8"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <span className="micro-caps">/ acesso antecipado</span>
-        <h3 className="mt-3 font-display text-3xl font-medium tracking-tight text-white">
-          Deixe seu e-mail
-        </h3>
-        <p className="mt-2 text-[14px] text-white/55">
-          Avisaremos assim que sua conta estiver pronta para começar.
-        </p>
-
-        {status === 'success' ? (
-          <div className="mt-6 rounded-2xl border border-emerald-400/20 bg-emerald-400/10 p-4 text-[14px] text-emerald-200">
-            Obrigado! Entraremos em contato em breve.
-          </div>
-        ) : (
-          <form onSubmit={submit} className="mt-6 space-y-3">
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="voce@email.com"
-              className="w-full rounded-full border border-white/10 bg-white/[0.02] px-5 py-3 text-[14px] text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none"
-            />
-            {error && <p className="text-[12px] text-rose-300">{error}</p>}
-            <button
-              type="submit"
-              disabled={status === 'loading'}
-              className="cta-primary w-full justify-center disabled:opacity-60"
-            >
-              {status === 'loading' ? 'Enviando…' : 'Enviar'}
-            </button>
-          </form>
-        )}
-
-        <button
-          onClick={onClose}
-          className="mt-4 w-full text-center font-mono text-[11px] uppercase tracking-[0.18em] text-white/40 hover:text-white/70"
-        >
-          Fechar
-        </button>
-      </div>
-    </div>
-  );
-}
-
 export function LandingPage() {
-  const [leadOpen, setLeadOpen] = useState(false);
   useMouseSpotlight();
   useReveal();
 
@@ -693,14 +602,13 @@ export function LandingPage() {
       <div className="noise-layer" aria-hidden="true" />
       <Header />
       <main className="relative z-10">
-        <Hero onOpenLead={() => setLeadOpen(true)} />
+        <Hero />
         <Bento />
         <HowItWorks />
-        <Pricing onOpenLead={() => setLeadOpen(true)} />
-        <Closing onOpenLead={() => setLeadOpen(true)} />
+        <Pricing />
+        <Closing />
         <Footer />
       </main>
-      <LeadModal open={leadOpen} onClose={() => setLeadOpen(false)} />
     </div>
   );
 }
