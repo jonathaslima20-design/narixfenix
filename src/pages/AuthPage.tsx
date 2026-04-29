@@ -74,7 +74,7 @@ export function AuthPage() {
   }
 
   return (
-    <div className="obsidian-canvas relative min-h-screen text-white overflow-hidden font-sans">
+    <div className="obsidian-canvas-static relative min-h-screen text-white overflow-hidden font-sans">
       <div className="noise-layer" aria-hidden="true" />
 
       <Link

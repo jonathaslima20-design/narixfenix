@@ -14,7 +14,7 @@ export function AdminLayout() {
   if (profile && profile.role !== 'admin') return <Navigate to="/dashboard" replace />;
 
   return (
-    <div className="obsidian-canvas relative flex min-h-screen font-sans text-white">
+    <div className="obsidian-canvas-static relative flex min-h-screen font-sans text-white">
       <div className="noise-layer" aria-hidden="true" />
       {/* Desktop sidebar */}
       <div className="hidden lg:block sticky top-0 h-screen">

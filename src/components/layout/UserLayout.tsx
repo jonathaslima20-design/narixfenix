@@ -31,7 +31,7 @@ function UserLayoutInner() {
   const accountDisabled = profile?.is_enabled === false;
 
   return (
-    <div className="obsidian-canvas relative flex h-screen font-sans text-white">
+    <div className="obsidian-canvas-static relative flex h-screen font-sans text-white">
       <div className="noise-layer" aria-hidden="true" />
       {/* Desktop sidebar */}
       <div className="hidden lg:block sticky top-0 h-screen">
