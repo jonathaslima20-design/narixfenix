@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Outlet, Navigate } from 'react-router-dom';
-import { Brain, Menu, ShieldOff } from 'lucide-react';
+import { Menu, ShieldOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UserSidebar } from './UserSidebar';
 import { useAuth } from '../../lib/AuthContext';
@@ -65,7 +65,7 @@ function UserLayoutInner() {
         )}
       </AnimatePresence>
 
-      <div className="relative flex-1 flex flex-col overflow-auto">
+      <div className="relative flex-1 min-w-0 flex flex-col overflow-hidden">
         {/* Mobile header */}
         <div className="sticky top-0 z-30 bg-obsidian/80 backdrop-blur-xl border-b border-white/10 px-4 py-3 flex items-center gap-3 lg:hidden">
           <button
@@ -75,15 +75,9 @@ function UserLayoutInner() {
             <Menu size={20} />
           </button>
         </div>
-        <main className="flex-1 min-h-0 relative flex flex-col">
+        <main className="flex-1 min-h-0 relative overflow-auto">
           <Outlet />
         </main>
-        <div className="py-6 flex items-center justify-center gap-2 lg:hidden">
-          <div className="w-8 h-8 bg-white/10 rounded-xl flex items-center justify-center ring-1 ring-white/10">
-            <Brain size={16} className="text-white" />
-          </div>
-          <span className="font-semibold text-white/80">BrainLead</span>
-        </div>
       </div>
 
       {/* Account disabled overlay */}
