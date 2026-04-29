@@ -89,9 +89,9 @@ export function AuthPage() {
 
       <div className="relative z-[1] min-h-screen flex items-center justify-center px-4 py-12">
         <motion.div
-          initial={{ opacity: 0, y: 24, filter: 'blur(14px)' }}
-          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, ease: 'easeOut' }}
           className="w-full max-w-md"
         >
           <div className="flex flex-col items-center text-center mb-8">

@@ -81,7 +81,7 @@ export function ConversationList({
           changed.forEach((id) => next.delete(id));
           return next;
         });
-      }, 1800);
+      }, 900);
       return () => window.clearTimeout(timeout);
     }
   }, [leads]);

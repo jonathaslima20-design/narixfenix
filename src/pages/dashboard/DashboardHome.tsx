@@ -55,9 +55,9 @@ export function DashboardHome() {
   return (
     <div className="absolute inset-0 overflow-auto p-4 sm:p-6 lg:p-8">
       <motion.div
-        initial={{ opacity: 0, y: 14, filter: 'blur(14px)' }}
-        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25, ease: 'easeOut' }}
         className="max-w-6xl mx-auto"
       >
         <div className="mb-10">
@@ -82,7 +82,7 @@ export function DashboardHome() {
                 key={t.key}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.05 * i, duration: 0.5 }}
+                transition={{ delay: Math.min(i, 3) * 0.03, duration: 0.2 }}
                 className="metric-tile"
               >
                 <div className="flex items-center justify-between">
@@ -109,7 +109,7 @@ export function DashboardHome() {
                     className={`h-full rounded-full bg-gradient-to-r ${t.gradient}`}
                     initial={{ width: 0 }}
                     animate={{ width: `${pct}%` }}
-                    transition={{ duration: 0.8, ease: 'easeOut' }}
+                    transition={{ duration: 0.4, ease: 'easeOut' }}
                   />
                 </div>
               </motion.div>
@@ -128,7 +128,7 @@ export function DashboardHome() {
               key={s.to}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.05 * i + 0.2, duration: 0.5 }}
+              transition={{ delay: Math.min(i, 3) * 0.03 + 0.1, duration: 0.2 }}
             >
               <Link
                 to={s.to}

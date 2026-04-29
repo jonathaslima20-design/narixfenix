@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { MotionConfig } from 'framer-motion';
 import { AuthProvider, useAuth } from './lib/AuthContext';
 import { LandingPage } from './pages/LandingPage';
 import { BrainLoader } from './components/ui/BrainLoader';
@@ -40,6 +41,7 @@ function RouteFallback() {
 export default function App() {
   return (
     <BrowserRouter>
+      <MotionConfig reducedMotion="user" transition={{ duration: 0.25, ease: 'easeOut' }}>
       <AuthProvider>
         <Suspense fallback={<RouteFallback />}>
           <Routes>
@@ -69,6 +71,7 @@ export default function App() {
           </Routes>
         </Suspense>
       </AuthProvider>
+      </MotionConfig>
     </BrowserRouter>
   );
 }

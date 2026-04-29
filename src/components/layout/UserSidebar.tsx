@@ -145,7 +145,7 @@ export function UserSidebar({ onClose }: { onClose?: () => void }) {
                 }`}
                 initial={{ width: 0 }}
                 animate={{ width: `${maxSends > 0 ? Math.min(100, Math.round((sendCount / maxSends) * 100)) : 0}%` }}
-                transition={{ duration: 0.6, ease: 'easeOut' }}
+                transition={{ duration: 0.3, ease: 'easeOut' }}
               />
             </div>
             <p className="text-[10px] text-white/55 mt-1">{remainingSends} restante{remainingSends !== 1 ? 's' : ''}</p>

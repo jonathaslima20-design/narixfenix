@@ -17,9 +17,9 @@ export function SettingsPage() {
   return (
     <div className="absolute inset-0 overflow-auto p-4 sm:p-6 lg:p-8">
       <motion.div
-        initial={{ opacity: 0, y: 12, filter: 'blur(10px)' }}
-        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25, ease: 'easeOut' }}
         className="max-w-3xl mx-auto"
       >
         <div className="mb-8">

@@ -13,7 +13,7 @@ export function PageHeader({ title, subtitle, actions, className = '' }: PageHea
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.2, ease: 'easeOut' }}
       className={`flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 ${className}`}
     >
       <div className="min-w-0">

@@ -291,9 +291,9 @@ export function AdminOverview() {
   return (
     <div className="relative p-4 sm:p-6 lg:p-8">
       <motion.div
-        initial={{ opacity: 0, y: 14, filter: 'blur(14px)' }}
-        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25, ease: 'easeOut' }}
         className="max-w-6xl mx-auto"
       >
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-10">
@@ -331,7 +331,7 @@ export function AdminOverview() {
               key={card.label}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.05 * i, duration: 0.5 }}
+              transition={{ delay: Math.min(i, 3) * 0.03, duration: 0.2 }}
               className="glass rounded-3xl p-6 md:col-span-3 lg:col-span-3 xl:col-span-3 relative overflow-hidden"
               style={{ gridColumn: 'span 3 / span 3' }}
             >
@@ -444,7 +444,7 @@ export function AdminOverview() {
                           className={`h-full rounded-full ${barColor}`}
                           initial={{ width: 0 }}
                           animate={{ width: `${barWidth}%` }}
-                          transition={{ duration: 0.6, ease: 'easeOut' }}
+                          transition={{ duration: 0.3, ease: 'easeOut' }}
                         />
                       </div>
                     </div>
@@ -537,7 +537,7 @@ function MetricTile({
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
+      transition={{ duration: 0.2 }}
       className={`metric-tile ${className}`}
     >
       <div className="flex items-center justify-between">
@@ -564,7 +564,7 @@ function MetricTile({
           className={`h-full rounded-full bg-gradient-to-r ${gradient}`}
           initial={{ width: 0 }}
           animate={{ width: `${pct}%` }}
-          transition={{ duration: 0.8, ease: 'easeOut' }}
+          transition={{ duration: 0.4, ease: 'easeOut' }}
         />
       </div>
     </motion.div>
