@@ -10,6 +10,11 @@ import {
   Check,
   CheckCheck,
   Circle,
+  Flame,
+  Thermometer,
+  Snowflake,
+  Phone,
+  MoreHorizontal,
 } from 'lucide-react';
 
 function useMouseSpotlight() {
@@ -144,6 +149,201 @@ function Header() {
   );
 }
 
+const MOCK_LEADS = [
+  { initials: 'MR', name: 'Marina Ribeiro', preview: 'Quero fechar hoje!', time: '14:02', badge: { label: 'Quente', bg: 'bg-red-500/20', text: 'text-red-400', Icon: Flame }, unread: 1 },
+  { initials: 'PT', name: 'Pedro Tavares', preview: 'Posso ver os planos?', time: '13:47', badge: { label: 'Morno', bg: 'bg-amber-500/20', text: 'text-amber-400', Icon: Thermometer }, unread: 0 },
+  { initials: 'CL', name: 'Carla Lima', preview: 'Ainda não sei...', time: '12:20', badge: { label: 'Frio', bg: 'bg-sky-500/20', text: 'text-sky-400', Icon: Snowflake }, unread: 0 },
+  { initials: 'RS', name: 'Rafael Silva', preview: 'Me manda o link', time: '11:55', badge: { label: 'Quente', bg: 'bg-red-500/20', text: 'text-red-400', Icon: Flame }, unread: 3 },
+];
+
+const MOCK_MESSAGES = [
+  { from: 'lead', text: 'Olá! Vi seu anúncio no instagram' },
+  { from: 'user', text: 'Oi Marina! Que bom! Quer conhecer nossa oferta?' },
+  { from: 'lead', text: 'Sim! Ainda tá disponível?' },
+  { from: 'user', text: 'Sim, posso te mandar os detalhes agora 🎯' },
+  { from: 'lead', text: 'Quero fechar hoje!' },
+];
+
+function HeroVisual() {
+  const [active, setActive] = useState(0);
+  const activeLead = MOCK_LEADS[active];
+  const BadgeIcon = activeLead.badge.Icon;
+
+  return (
+    <div className="reveal relative w-full max-w-4xl mx-auto mt-16 mb-2 select-none" style={{ perspective: '1200px' }}>
+      {/* Ambient glow */}
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-48 blur-[80px] opacity-30"
+        style={{ background: 'radial-gradient(ellipse at 50% 100%, #10b981 0%, transparent 70%)' }}
+      />
+
+      {/* Main app window */}
+      <div
+        className="relative rounded-2xl border border-white/[0.10] overflow-hidden"
+        style={{
+          background: 'linear-gradient(160deg, rgba(255,255,255,0.055) 0%, rgba(255,255,255,0.02) 100%)',
+          backdropFilter: 'blur(20px)',
+          boxShadow: '0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.06)',
+          transform: 'rotateX(4deg)',
+          transformOrigin: 'top center',
+        }}
+      >
+        {/* Window chrome / title bar */}
+        <div className="flex items-center gap-2 px-4 py-3 border-b border-white/[0.07]" style={{ background: 'rgba(0,0,0,0.25)' }}>
+          <span className="h-3 w-3 rounded-full bg-white/[0.12]" />
+          <span className="h-3 w-3 rounded-full bg-white/[0.08]" />
+          <span className="h-3 w-3 rounded-full bg-white/[0.06]" />
+          <span className="mx-auto font-mono text-[11px] uppercase tracking-[0.18em] text-white/25">brainlead — inbox</span>
+        </div>
+
+        <div className="flex" style={{ minHeight: 360 }}>
+          {/* Sidebar: lead list */}
+          <div className="w-56 shrink-0 border-r border-white/[0.06]" style={{ background: 'rgba(0,0,0,0.18)' }}>
+            <div className="px-3 pt-3 pb-2">
+              <div className="flex items-center gap-2 rounded-lg bg-white/[0.05] px-2.5 py-1.5">
+                <span className="h-3 w-3 rounded bg-white/[0.12]" />
+                <span className="font-mono text-[10px] text-white/25 flex-1">Buscar lead...</span>
+              </div>
+            </div>
+            <div className="px-2 pb-2">
+              {MOCK_LEADS.map((lead, i) => (
+                <button
+                  key={lead.name}
+                  onClick={() => setActive(i)}
+                  className={`w-full flex items-center gap-2.5 rounded-xl px-2 py-2 text-left transition-all ${
+                    active === i ? 'bg-white/[0.09]' : 'hover:bg-white/[0.04]'
+                  }`}
+                >
+                  <div className="shrink-0 h-8 w-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-800 flex items-center justify-center font-mono text-[10px] text-white/70">
+                    {lead.initials}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-1">
+                      <span className="text-[12px] text-white/80 truncate font-medium">{lead.name}</span>
+                      <span className="font-mono text-[9px] text-white/25 shrink-0">{lead.time}</span>
+                    </div>
+                    <div className="flex items-center justify-between gap-1 mt-0.5">
+                      <span className="text-[11px] text-white/35 truncate">{lead.preview}</span>
+                      {lead.unread > 0 && (
+                        <span className="shrink-0 h-4 w-4 rounded-full bg-emerald-500 flex items-center justify-center font-mono text-[9px] text-white">
+                          {lead.unread}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Chat area */}
+          <div className="flex-1 flex flex-col min-w-0">
+            {/* Chat header */}
+            <div className="flex items-center gap-3 px-4 py-3 border-b border-white/[0.06]" style={{ background: 'rgba(0,0,0,0.10)' }}>
+              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-800 flex items-center justify-center font-mono text-[10px] text-white/70 shrink-0">
+                {activeLead.initials}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-[13px] font-medium text-white/90 truncate">{activeLead.name}</div>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                  <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-emerald-400/70">online</span>
+                </div>
+              </div>
+              <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${activeLead.badge.bg} ${activeLead.badge.text}`}>
+                <BadgeIcon size={9} />
+                {activeLead.badge.label}
+              </div>
+              <button className="p-1 rounded-lg hover:bg-white/[0.06] text-white/20 transition-colors">
+                <Phone size={13} />
+              </button>
+              <button className="p-1 rounded-lg hover:bg-white/[0.06] text-white/20 transition-colors">
+                <MoreHorizontal size={13} />
+              </button>
+            </div>
+
+            {/* Messages */}
+            <div className="flex-1 px-4 py-4 space-y-2 overflow-hidden">
+              {MOCK_MESSAGES.map((msg, i) => (
+                <div key={i} className={`flex ${msg.from === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div
+                    className={`max-w-[68%] rounded-2xl px-3 py-2 text-[12px] leading-[1.45] ${
+                      msg.from === 'user'
+                        ? 'bg-emerald-400/10 border border-emerald-400/20 text-white/90 rounded-tr-sm'
+                        : 'bg-white/[0.05] text-white/75 rounded-tl-sm'
+                    }`}
+                  >
+                    {msg.text}
+                    {msg.from === 'user' && (
+                      <CheckCheck size={10} className="inline ml-1.5 text-emerald-400/60" />
+                    )}
+                  </div>
+                </div>
+              ))}
+              {/* Typing indicator */}
+              <div className="flex items-center gap-1 px-1 pt-1">
+                <span className="typing-dot h-1.5 w-1.5 rounded-full bg-white/30" style={{ animationDelay: '0ms' }} />
+                <span className="typing-dot h-1.5 w-1.5 rounded-full bg-white/30" style={{ animationDelay: '150ms' }} />
+                <span className="typing-dot h-1.5 w-1.5 rounded-full bg-white/30" style={{ animationDelay: '300ms' }} />
+              </div>
+            </div>
+
+            {/* Composer */}
+            <div className="px-4 py-3 border-t border-white/[0.06]" style={{ background: 'rgba(0,0,0,0.12)' }}>
+              <div className="flex items-center gap-2 rounded-xl bg-white/[0.05] border border-white/[0.08] px-3 py-2">
+                <span className="flex-1 font-mono text-[11px] text-white/20">Escreva uma mensagem...</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="h-6 w-6 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                    <Send size={10} className="text-emerald-400" />
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Floating lead card */}
+      <div
+        className="absolute -bottom-4 -right-4 md:right-4 w-52 rounded-2xl border border-white/[0.12] p-3.5"
+        style={{
+          background: 'linear-gradient(135deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.03) 100%)',
+          backdropFilter: 'blur(20px)',
+          boxShadow: '0 16px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.07)',
+          animation: 'heroFloat 4s ease-in-out infinite',
+        }}
+      >
+        <div className="flex items-center gap-2 mb-2.5">
+          <div className="h-8 w-8 rounded-full bg-gradient-to-br from-emerald-600 to-teal-800 flex items-center justify-center font-mono text-[10px] text-white/80">
+            RS
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="text-[12px] font-medium text-white/90 truncate">Rafael Silva</div>
+            <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-red-500/20 text-red-400 text-[9px] font-medium mt-0.5">
+              <Flame size={8} /> Quente
+            </div>
+          </div>
+        </div>
+        <div className="hairline" />
+        <div className="mt-2.5 space-y-1.5">
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-white/30">mensagens</span>
+            <span className="font-mono text-[11px] text-white/70">24</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-white/30">sem resposta</span>
+            <span className="font-mono text-[11px] text-red-400">3</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-white/30">estágio</span>
+            <span className="font-mono text-[11px] text-white/60">Proposta</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Hero() {
   return (
     <section className="relative pt-48 pb-32 px-6">
@@ -177,6 +377,8 @@ function Hero() {
           </Link>
           <Link to="/cadastro" className="ghost-btn">Ver planos</Link>
         </div>
+
+        <HeroVisual />
 
         <div className="reveal mt-20 w-full">
           <div className="hairline" />
