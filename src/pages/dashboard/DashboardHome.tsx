@@ -21,24 +21,21 @@ export function DashboardHome() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user?.id) return;
+    const userId = user.id;
     async function load() {
-      const [coldRes, warmRes, hotRes, totalRes] = await Promise.all([
-        supabase.from('leads').select('id', { count: 'exact', head: true }).eq('user_id', user!.id).eq('category', 'cold'),
-        supabase.from('leads').select('id', { count: 'exact', head: true }).eq('user_id', user!.id).eq('category', 'warm'),
-        supabase.from('leads').select('id', { count: 'exact', head: true }).eq('user_id', user!.id).eq('category', 'hot'),
-        supabase.from('leads').select('id', { count: 'exact', head: true }).eq('user_id', user!.id),
-      ]);
+      const { data } = await supabase.rpc('get_user_lead_stats', { user_uuid: userId });
+      const row = Array.isArray(data) ? data[0] : data;
       setTemp({
-        cold: coldRes.count || 0,
-        warm: warmRes.count || 0,
-        hot: hotRes.count || 0,
+        cold: row?.cold ?? 0,
+        warm: row?.warm ?? 0,
+        hot: row?.hot ?? 0,
       });
-      setTotalLeads(totalRes.count || 0);
+      setTotalLeads(row?.total ?? 0);
       setLoading(false);
     }
     load();
-  }, [user]);
+  }, [user?.id]);
 
   const total = temp.cold + temp.warm + temp.hot;
   const tiles = [

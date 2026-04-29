@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import { Check, CheckCheck, Clock, AlertCircle, Sparkles, RotateCw, MoreVertical, Trash2 } from 'lucide-react';
 import { Message } from '../../lib/types';
 import { AudioPlayer } from './AudioPlayer';
@@ -14,7 +14,7 @@ interface Props {
   onDelete?: (scope: 'local' | 'whatsapp') => void;
 }
 
-export function MessageBubble({ message, errorDetail, onRetry, onDelete }: Props) {
+function MessageBubbleInner({ message, errorDetail, onRetry, onDelete }: Props) {
   const isOut = message.direction === 'out';
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -146,3 +146,16 @@ export function MessageBubble({ message, errorDetail, onRetry, onDelete }: Props
     </div>
   );
 }
+
+export const MessageBubble = memo(MessageBubbleInner, (prev, next) => {
+  return (
+    prev.message.id === next.message.id &&
+    prev.message.status === next.message.status &&
+    prev.message.content === next.message.content &&
+    prev.message.media_url === next.message.media_url &&
+    prev.message.whatsapp_message_id === next.message.whatsapp_message_id &&
+    prev.errorDetail === next.errorDetail &&
+    prev.onRetry === next.onRetry &&
+    prev.onDelete === next.onDelete
+  );
+});

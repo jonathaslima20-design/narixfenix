@@ -16,6 +16,7 @@ import {
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../lib/AuthContext';
 import { usePageTitle } from '../../hooks/usePageTitle';
+import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { useLeadCategories, type LeadCategoryRow } from '../../lib/useLeadCategories';
 import { resolveIcon } from '../../lib/iconMap';
 import { leadDisplayName, leadPhoneLabel } from '../../lib/leadDisplay';
@@ -135,7 +136,7 @@ export function LeadsPage() {
   );
 
   const refresh = useCallback(async () => {
-    if (!user) return;
+    if (!user?.id) return;
     const { data } = await supabase
       .from('leads')
       .select('*')
@@ -143,19 +144,20 @@ export function LeadsPage() {
       .order('last_activity_at', { ascending: false, nullsFirst: false });
     setLeads((data ?? []) as Lead[]);
     setLoading(false);
-  }, [user]);
+  }, [user?.id]);
 
   useEffect(() => {
     refresh();
   }, [refresh]);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user?.id) return;
+    const userId = user.id;
     const channel = supabase
-      .channel(`crm-leads-${user.id}`)
+      .channel(`crm-leads-${userId}`)
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'leads', filter: `user_id=eq.${user.id}` },
+        { event: '*', schema: 'public', table: 'leads', filter: `user_id=eq.${userId}` },
         (payload) => {
           if (payload.eventType === 'INSERT') {
             setLeads((prev) => [payload.new as Lead, ...prev]);
@@ -168,15 +170,16 @@ export function LeadsPage() {
       )
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [user]);
+  }, [user?.id]);
 
+  const debouncedSearch = useDebouncedValue(search, 250);
   const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
+    const q = debouncedSearch.trim().toLowerCase();
     if (!q) return leads;
     return leads.filter((l) =>
       `${l.name ?? ''} ${l.phone ?? ''} ${(l.tags ?? []).join(' ')}`.toLowerCase().includes(q),
     );
-  }, [leads, search]);
+  }, [leads, debouncedSearch]);
 
   const grouped = useMemo(() => {
     const map = new Map<string, Lead[]>();

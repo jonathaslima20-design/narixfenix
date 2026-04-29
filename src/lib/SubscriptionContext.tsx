@@ -1,4 +1,4 @@
-import { createContext, useContext, ReactNode } from 'react';
+import { createContext, useContext, useMemo, ReactNode } from 'react';
 import { useSubscription } from './useSubscription';
 import { ClientSubscription, Plan } from './types';
 
@@ -30,11 +30,19 @@ const SubscriptionContext = createContext<SubscriptionContextType>({
 
 export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const sub = useSubscription();
-  return (
-    <SubscriptionContext.Provider value={sub}>
-      {children}
-    </SubscriptionContext.Provider>
-  );
+  const value = useMemo(() => sub, [
+    sub.subscription,
+    sub.plan,
+    sub.loading,
+    sub.isBlocked,
+    sub.isTrial,
+    sub.remainingSends,
+    sub.daysLeft,
+    sub.sendCount,
+    sub.incrementSendCount,
+    sub.refresh,
+  ]);
+  return <SubscriptionContext.Provider value={value}>{children}</SubscriptionContext.Provider>;
 }
 
 export function useSubscriptionCtx() {

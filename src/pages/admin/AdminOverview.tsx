@@ -102,70 +102,42 @@ export function AdminOverview() {
     async function load() {
       setLoading(true);
       const days = PERIOD_OPTIONS.find((p) => p.value === period)?.days || 30;
-      const now = new Date();
-      const currentStart = new Date(now.getTime() - days * 24 * 3600 * 1000).toISOString();
-      const previousStart = new Date(now.getTime() - 2 * days * 24 * 3600 * 1000).toISOString();
 
-      const [
-        usersRes,
-        instancesAllRes,
-        instancesConnectedRes,
-        leadsRes,
-        logsRes,
-        plansRes,
-        subsRes,
-        newUsersRes,
-        prevNewUsersRes,
-        newLeadsRes,
-        prevNewLeadsRes,
-        failedSendsRes,
-        coldRes,
-        warmRes,
-        hotRes,
-      ] = await Promise.all([
-        supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'user'),
-        supabase.from('whatsapp_instances').select('status', { count: 'exact' }),
-        supabase.from('whatsapp_instances').select('id', { count: 'exact', head: true }).eq('status', 'connected'),
-        supabase.from('leads').select('id', { count: 'exact', head: true }),
+      const [overviewRes, logsRes, plansRes, subsRes] = await Promise.all([
+        supabase.rpc('admin_overview_stats', { period_days: days }),
         supabase.from('usage_logs').select('tokens_in, tokens_out, created_at, user_id, profiles(email)').order('created_at', { ascending: false }).limit(10),
-        supabase.from('plans').select('*').order('sort_order'),
+        supabase.from('plans').select('id, name, slug, price_cents, billing_period, sort_order').order('sort_order'),
         supabase.from('client_subscriptions').select('plan_id, status').eq('status', 'active'),
-        supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'user').gte('created_at', currentStart),
-        supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'user').gte('created_at', previousStart).lt('created_at', currentStart),
-        supabase.from('leads').select('id', { count: 'exact', head: true }).gte('created_at', currentStart),
-        supabase.from('leads').select('id', { count: 'exact', head: true }).gte('created_at', previousStart).lt('created_at', currentStart),
-        supabase.from('whatsapp_send_logs').select('id', { count: 'exact', head: true }).not('error_message', 'is', null).gte('created_at', currentStart),
-        supabase.from('leads').select('id', { count: 'exact', head: true }).eq('category', 'cold'),
-        supabase.from('leads').select('id', { count: 'exact', head: true }).eq('category', 'warm'),
-        supabase.from('leads').select('id', { count: 'exact', head: true }).eq('category', 'hot'),
       ]);
 
-      const totalInstances = instancesAllRes.count || 0;
-      const connected = instancesConnectedRes.count || 0;
+      const overview = Array.isArray(overviewRes.data) ? overviewRes.data[0] : overviewRes.data;
+      const totalInstances = Number(overview?.total_instances ?? 0);
+      const connected = Number(overview?.connected_instances ?? 0);
+      const totalUsers = Number(overview?.total_users ?? 0);
 
       setStats({
-        totalUsers: usersRes.count || 0,
+        totalUsers,
         activeInstances: connected,
-        totalLeads: leadsRes.count || 0,
-        newUsers: newUsersRes.count || 0,
-        prevNewUsers: prevNewUsersRes.count || 0,
-        newLeads: newLeadsRes.count || 0,
-        prevNewLeads: prevNewLeadsRes.count || 0,
+        totalLeads: Number(overview?.total_leads ?? 0),
+        newUsers: Number(overview?.new_users ?? 0),
+        prevNewUsers: Number(overview?.prev_new_users ?? 0),
+        newLeads: Number(overview?.new_leads ?? 0),
+        prevNewLeads: Number(overview?.prev_new_leads ?? 0),
         prevActiveInstances: connected,
-        prevTotalUsers: usersRes.count || 0,
+        prevTotalUsers: totalUsers,
       });
 
       setHealth({
         connected,
         disconnected: Math.max(totalInstances - connected, 0),
-        failedSends: failedSendsRes.count || 0,
+        failedSends: Number(overview?.failed_sends ?? 0),
         totalInstances,
       });
 
       setLeadTemp({
-        cold: coldRes.count || 0,
-        warm: warmRes.count || 0,
-        hot: hotRes.count || 0,
+        cold: Number(overview?.cold_leads ?? 0),
+        warm: Number(overview?.warm_leads ?? 0),
+        hot: Number(overview?.hot_leads ?? 0),
       });
 
       const planMap = new Map<string, Plan>();

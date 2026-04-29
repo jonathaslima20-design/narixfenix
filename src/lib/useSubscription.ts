@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { supabase } from './supabase';
 import { useAuth } from './AuthContext';
 import { ClientSubscription, Plan } from './types';
@@ -55,23 +55,27 @@ export function useSubscription(): SubscriptionState {
     setLoading(false);
   }, [user?.id]);
 
+  const fetchSubscriptionRef = useRef(fetchSubscription);
+  useEffect(() => { fetchSubscriptionRef.current = fetchSubscription; }, [fetchSubscription]);
+
   useEffect(() => {
-    fetchSubscription();
-  }, [fetchSubscription]);
+    fetchSubscriptionRef.current();
+  }, [user?.id]);
 
   useEffect(() => {
     if (!user?.id) return;
-    const channelName = `user-subscription-${user.id}-${Math.random().toString(36).slice(2, 8)}`;
+    const userId = user.id;
+    const channelName = `user-subscription-${userId}-${Math.random().toString(36).slice(2, 8)}`;
     const channel = supabase
       .channel(channelName)
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'client_subscriptions', filter: `user_id=eq.${user.id}` },
-        () => { fetchSubscription(); },
+        { event: '*', schema: 'public', table: 'client_subscriptions', filter: `user_id=eq.${userId}` },
+        () => { fetchSubscriptionRef.current(); },
       )
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [user?.id, fetchSubscription]);
+  }, [user?.id]);
 
   const isTrial = subscription?.status === 'trial';
 

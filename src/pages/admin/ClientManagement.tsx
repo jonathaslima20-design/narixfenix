@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { usePageTitle } from '../../hooks/usePageTitle';
+import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Users,
@@ -175,61 +176,47 @@ export function ClientManagement() {
 
   async function loadClients() {
     setLoading(true);
-    const { data: profiles } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('role', 'user')
-      .order('created_at', { ascending: false });
-
-    if (!profiles) { setLoading(false); return; }
-
-    const enriched = await Promise.all(
-      profiles.map(async (p) => {
-        const [instRes, instCountRes, leadRes, campaignRes, templateRes, subRes] = await Promise.all([
-          supabase.from('whatsapp_instances').select('status, phone_number, send_mode').eq('user_id', p.id).order('created_at', { ascending: true }).limit(1).maybeSingle(),
-          supabase.from('whatsapp_instances').select('id', { count: 'exact', head: true }).eq('user_id', p.id),
-          supabase.from('leads').select('id', { count: 'exact' }).eq('user_id', p.id),
-          supabase.from('campaigns').select('id', { count: 'exact' }).eq('user_id', p.id),
-          supabase.from('message_templates').select('id', { count: 'exact' }).eq('user_id', p.id),
-          supabase.from('client_subscriptions').select('*, plans(*)').eq('user_id', p.id).maybeSingle(),
-        ]);
-
-        const sub = subRes.data;
-        const plan = sub?.plans as unknown as Plan | null;
-
-        return {
-          ...p,
-          instance_status: instRes.data?.status || 'disconnected',
-          instance_phone: instRes.data?.phone_number || '',
-          instance_send_mode: instRes.data?.send_mode || 'manual',
-          instance_count: instCountRes.count || 0,
-          lead_count: leadRes.count || 0,
-          campaign_count: campaignRes.count || 0,
-          template_count: templateRes.count || 0,
-          subscription_id: sub?.id,
-          plan_id: sub?.plan_id,
-          plan_name: plan?.name || 'Sem plano',
-          plan_slug: plan?.slug,
-          plan_max_sends: plan?.max_sends ?? -1,
-          plan_max_instances: plan?.max_whatsapp_instances ?? 1,
-          max_instances_override: (sub as { max_instances_override?: number | null } | null | undefined)?.max_instances_override ?? null,
-          sub_status: sub?.status as SubscriptionStatus | undefined,
-          sub_started_at: sub?.started_at,
-          sub_expires_at: sub?.expires_at,
-          sub_cancelled_at: sub?.cancelled_at,
-          sub_notes: sub?.notes || '',
-          send_count: sub?.send_count ?? 0,
-        } as ClientRow;
-      }),
-    );
-    setClients(enriched);
+    const { data, error } = await supabase.rpc('admin_list_clients_with_stats');
+    if (error || !data) { setClients([]); setLoading(false); return; }
+    const rows = (data as Array<Record<string, unknown>>).map((r) => ({
+      id: r.id as string,
+      email: r.email as string,
+      full_name: (r.full_name as string) || '',
+      role: r.role as string,
+      created_at: r.created_at as string,
+      updated_at: r.updated_at as string,
+      is_enabled: r.is_enabled as boolean,
+      max_whatsapp_instances_override: r.max_whatsapp_instances_override as number | null,
+      instance_status: (r.instance_status as string) || 'disconnected',
+      instance_phone: (r.instance_phone as string) || '',
+      instance_send_mode: (r.instance_send_mode as string) || 'manual',
+      instance_count: Number(r.instance_count ?? 0),
+      lead_count: Number(r.lead_count ?? 0),
+      campaign_count: Number(r.campaign_count ?? 0),
+      template_count: Number(r.template_count ?? 0),
+      subscription_id: (r.subscription_id as string) || undefined,
+      plan_id: (r.plan_id as string) || undefined,
+      plan_name: (r.plan_name as string) || 'Sem plano',
+      plan_slug: (r.plan_slug as string) || undefined,
+      plan_max_sends: Number(r.plan_max_sends ?? -1),
+      plan_max_instances: Number(r.plan_max_instances ?? 1),
+      max_instances_override: (r.max_instances_override as number | null) ?? null,
+      sub_status: (r.sub_status as SubscriptionStatus | undefined) || undefined,
+      sub_started_at: (r.sub_started_at as string) || undefined,
+      sub_expires_at: (r.sub_expires_at as string | null) ?? null,
+      sub_cancelled_at: (r.sub_cancelled_at as string | null) ?? null,
+      sub_notes: (r.sub_notes as string) || '',
+      send_count: Number(r.send_count ?? 0),
+    })) as ClientRow[];
+    setClients(rows);
     setLoading(false);
   }
 
+  const debouncedSearch = useDebouncedValue(search, 250);
   const filtered = useMemo(() => {
     return clients.filter((c) => {
-      if (search) {
-        const q = search.toLowerCase();
+      if (debouncedSearch) {
+        const q = debouncedSearch.toLowerCase();
         if (!c.email.toLowerCase().includes(q) && !c.full_name?.toLowerCase().includes(q)) return false;
       }
       if (filterPlan !== 'all' && c.plan_slug !== filterPlan) return false;
@@ -237,7 +224,7 @@ export function ClientManagement() {
       if (filterWaStatus !== 'all' && (c.instance_status || 'disconnected') !== filterWaStatus) return false;
       return true;
     });
-  }, [clients, search, filterPlan, filterSubStatus, filterWaStatus]);
+  }, [clients, debouncedSearch, filterPlan, filterSubStatus, filterWaStatus]);
 
   const stats = useMemo(() => {
     const active = clients.filter((c) => c.sub_status === 'active').length;

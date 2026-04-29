@@ -4,6 +4,7 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../lib/AuthContext';
 import { useInstances } from '../../lib/useInstances';
 import { usePageTitle } from '../../hooks/usePageTitle';
+import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { Lead, SendMode } from '../../lib/types';
 import { ConversationList } from '../../components/chat/ConversationList';
 import { ChatPanel } from '../../components/chat/ChatPanel';
@@ -25,13 +26,14 @@ export function InboxPage() {
   const [detailsOpen, setDetailsOpen] = useState(false);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user?.id) return;
+    const userId = user.id;
     let active = true;
     async function load() {
       const { data } = await supabase
         .from('leads')
         .select('*')
-        .eq('user_id', user!.id)
+        .eq('user_id', userId)
         .order('last_activity_at', { ascending: false, nullsFirst: false })
         .limit(200);
       if (!active) return;
@@ -40,16 +42,17 @@ export function InboxPage() {
     }
     load();
     return () => { active = false; };
-  }, [user]);
+  }, [user?.id]);
 
   useEffect(() => {
-    if (!user) return;
-    const channelName = `inbox-leads-${user.id}-${Math.random().toString(36).slice(2, 8)}`;
+    if (!user?.id) return;
+    const userId = user.id;
+    const channelName = `inbox-leads-${userId}-${Math.random().toString(36).slice(2, 8)}`;
     const channel = supabase
       .channel(channelName)
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'leads', filter: `user_id=eq.${user.id}` },
+        { event: '*', schema: 'public', table: 'leads', filter: `user_id=eq.${userId}` },
         (payload) => {
           if (payload.eventType === 'INSERT') {
             setLeads((prev) => [payload.new as Lead, ...prev]);
@@ -62,10 +65,11 @@ export function InboxPage() {
       )
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [user]);
+  }, [user?.id]);
 
+  const debouncedSearch = useDebouncedValue(search, 250);
   const filteredLeads = useMemo(() => {
-    const q = search.trim().toLowerCase();
+    const q = debouncedSearch.trim().toLowerCase();
     return leads.filter((l) => {
       if (filter === 'unread' && !(l.unread_count && l.unread_count > 0)) return false;
       if (filter === 'archived' && !l.is_archived) return false;
@@ -76,7 +80,7 @@ export function InboxPage() {
       }
       return true;
     });
-  }, [leads, search, filter]);
+  }, [leads, debouncedSearch, filter]);
 
   const selectedLead = useMemo(
     () => leads.find((l) => l.id === selectedId) ?? null,
