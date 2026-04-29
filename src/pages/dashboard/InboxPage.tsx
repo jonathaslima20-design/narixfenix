@@ -44,8 +44,9 @@ export function InboxPage() {
 
   useEffect(() => {
     if (!user) return;
+    const channelName = `inbox-leads-${user.id}-${Math.random().toString(36).slice(2, 8)}`;
     const channel = supabase
-      .channel(`inbox-leads-${user.id}`)
+      .channel(channelName)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'leads', filter: `user_id=eq.${user.id}` },

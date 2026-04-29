@@ -286,8 +286,9 @@ export function ChatPanel({ lead, userId, sendMode, onOpenDetails, onLeadUpdated
     }
     loadInstance();
 
+    const instanceChannelName = `instance-${userId}-${Math.random().toString(36).slice(2, 8)}`;
     const channel = supabase
-      .channel(`instance-${userId}`)
+      .channel(instanceChannelName)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'whatsapp_instances', filter: `user_id=eq.${userId}` },
@@ -323,8 +324,9 @@ export function ChatPanel({ lead, userId, sendMode, onOpenDetails, onLeadUpdated
 
     loadInitial();
 
+    const presenceChannelName = `presence-${lead.id}-${Math.random().toString(36).slice(2, 8)}`;
     const channel = supabase
-      .channel(`presence-${lead.id}`)
+      .channel(presenceChannelName)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'lead_presence', filter: `lead_id=eq.${lead.id}` },
