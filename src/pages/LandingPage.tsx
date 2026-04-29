@@ -14,6 +14,7 @@ import {
   User,
   DollarSign,
   ShoppingCart,
+  Send,
 } from 'lucide-react';
 
 function useMouseSpotlight() {
