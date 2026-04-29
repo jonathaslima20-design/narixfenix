@@ -163,11 +163,68 @@ const MOCK_MESSAGES = [
   { from: 'lead', text: 'Quero fechar hoje!' },
 ];
 
-const PULSE_TILES = [
-  { label: 'Leads hoje', value: '34', sub: '+12 vs ontem', bars: null },
-  { label: 'Resposta', value: '78%', sub: 'taxa média', bars: null },
-  { label: 'Em aberto', value: '12', sub: 'negócios ativos', bars: [0.3, 0.6, 0.45, 0.8, 0.55] },
-];
+const CAMPAIGN_BARS = [180, 340, 290, 520, 410, 680, 590, 720, 460, 810, 750, 920, 870, 1040];
+
+function CampaignPanel() {
+  const peak = Math.max(...CAMPAIGN_BARS);
+  return (
+    <div
+      className="mt-2 rounded-2xl border border-white/[0.08] px-5 py-4"
+      style={{
+        background: 'linear-gradient(160deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%)',
+        backdropFilter: 'blur(20px)',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.45)',
+      }}
+    >
+      {/* Header row */}
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-white/30">/ campanha recente</span>
+          <div className="text-[13px] font-medium text-white/80 mt-1">Oferta de Abril — <span className="text-white/90">2.340 enviadas</span></div>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="relative flex h-1.5 w-1.5">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white/50" />
+            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-white/70" />
+          </span>
+          <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-white/35">concluída</span>
+        </div>
+      </div>
+
+      {/* Bar chart */}
+      <div className="flex items-end gap-1 h-12">
+        {CAMPAIGN_BARS.map((v, i) => {
+          const h = v / peak;
+          const isPeak = v === peak;
+          return (
+            <div
+              key={i}
+              className="flex-1 rounded-sm transition-all"
+              style={{
+                height: `${h * 100}%`,
+                background: isPeak ? 'rgba(255,255,255,0.55)' : `rgba(255,255,255,${0.10 + h * 0.22})`,
+              }}
+            />
+          );
+        })}
+      </div>
+
+      {/* Footer metrics */}
+      <div className="flex items-center mt-4 divide-x divide-white/[0.07]">
+        {[
+          { label: 'enviadas', value: '2.340' },
+          { label: 'entregues', value: '87%' },
+          { label: 'responderam', value: '34%' },
+        ].map(({ label, value }) => (
+          <div key={label} className="flex-1 px-3 first:pl-0 last:pr-0">
+            <div className="font-mono text-[11px] text-white/70">{value}</div>
+            <div className="font-mono text-[9px] uppercase tracking-[0.14em] text-white/30 mt-0.5">{label}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function HeroVisual() {
   const [active, setActive] = useState(0);
@@ -175,7 +232,7 @@ function HeroVisual() {
   const BadgeIcon = activeLead.badge.Icon;
 
   return (
-    <div className="reveal w-full max-w-4xl mx-auto mt-16 mb-2 select-none flex gap-3 items-stretch" style={{ perspective: '1200px' }}>
+    <div className="reveal relative w-full max-w-4xl mx-auto mt-16 mb-2 select-none" style={{ perspective: '1200px' }}>
       {/* Ambient glow */}
       <div
         className="pointer-events-none absolute inset-x-0 bottom-0 h-48 blur-[100px] opacity-20"
@@ -184,7 +241,7 @@ function HeroVisual() {
 
       {/* Main app window */}
       <div
-        className="relative flex-1 min-w-0 rounded-2xl border border-white/[0.10] overflow-hidden"
+        className="relative rounded-2xl border border-white/[0.10] overflow-hidden"
         style={{
           background: 'linear-gradient(160deg, rgba(255,255,255,0.055) 0%, rgba(255,255,255,0.02) 100%)',
           backdropFilter: 'blur(20px)',
@@ -302,45 +359,7 @@ function HeroVisual() {
         </div>
       </div>
 
-      {/* Pulse Strip */}
-      <div
-        className="hidden md:flex flex-col gap-3 w-36 shrink-0"
-        style={{
-          transform: 'rotateX(4deg)',
-          transformOrigin: 'top center',
-        }}
-      >
-        {PULSE_TILES.map((tile) => (
-          <div
-            key={tile.label}
-            className="flex-1 rounded-2xl border border-white/[0.08] p-4 flex flex-col justify-between"
-            style={{
-              background: 'linear-gradient(160deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.015) 100%)',
-              backdropFilter: 'blur(20px)',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
-            }}
-          >
-            <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-white/35">{tile.label}</span>
-            <div>
-              <div className="font-display text-3xl font-medium tracking-tight text-white/90 leading-none mt-2">
-                {tile.value}
-              </div>
-              <div className="font-mono text-[9px] text-white/30 mt-1">{tile.sub}</div>
-              {tile.bars && (
-                <div className="flex items-end gap-1 mt-3 h-6">
-                  {tile.bars.map((h, i) => (
-                    <div
-                      key={i}
-                      className="flex-1 rounded-sm bg-white/20"
-                      style={{ height: `${h * 100}%` }}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
+      <CampaignPanel />
     </div>
   );
 }
