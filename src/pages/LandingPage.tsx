@@ -15,6 +15,7 @@ import {
   DollarSign,
   ShoppingCart,
   Send,
+  CheckCheck,
 } from 'lucide-react';
 
 function useMouseSpotlight() {
