@@ -33,7 +33,7 @@ export function HelpPage() {
   usePageTitle('Ajuda — BrainLead');
 
   return (
-    <div className="relative p-4 sm:p-6 lg:p-8">
+    <div className="absolute inset-0 overflow-auto p-4 sm:p-6 lg:p-8">
       <motion.div
         initial={{ opacity: 0, y: 12, filter: 'blur(10px)' }}
         animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}

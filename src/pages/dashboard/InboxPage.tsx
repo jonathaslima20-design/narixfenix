@@ -100,8 +100,8 @@ export function InboxPage() {
   if (!user) return null;
 
   return (
-    <div className="absolute inset-0 flex flex-col">
-      <div className="flex-1 min-h-0 flex">
+    <div className="absolute inset-0 flex">
+      <div className="flex-1 min-h-0 flex w-full">
         <div
           className={`${selectedId ? 'hidden lg:flex' : 'flex'} w-full lg:w-[360px] xl:w-[400px] shrink-0 border-r border-white/[0.06] bg-surface-0/40 backdrop-blur-xl flex-col`}
         >

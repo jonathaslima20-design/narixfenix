@@ -75,7 +75,7 @@ function UserLayoutInner() {
             <Menu size={20} />
           </button>
         </div>
-        <main className="flex-1 min-h-0 relative overflow-auto">
+        <main className="flex-1 min-h-0 relative">
           <Outlet />
         </main>
       </div>
