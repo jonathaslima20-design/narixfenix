@@ -5,13 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { AdminSidebar } from './AdminSidebar';
 import { useAuth } from '../../lib/AuthContext';
 import { BrainLoader } from '../ui/BrainLoader';
-import { AmbientBackground } from '../ui/AmbientBackground';
-import { useMouseSpotlight } from '../../hooks/useMouseSpotlight';
-
 export function AdminLayout() {
   const { user, profile, loading } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  useMouseSpotlight();
 
   if (loading) return <LoadingScreen />;
   if (!user) return <Navigate to="/login" replace />;
@@ -20,7 +16,6 @@ export function AdminLayout() {
   return (
     <div className="obsidian-canvas relative flex min-h-screen font-sans text-white">
       <div className="noise-layer" aria-hidden="true" />
-      <AmbientBackground intensity="subtle" />
       {/* Desktop sidebar */}
       <div className="hidden lg:block sticky top-0 h-screen">
         <AdminSidebar />

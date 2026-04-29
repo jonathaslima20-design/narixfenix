@@ -6,7 +6,6 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { Input } from '../components/ui/Input';
 import { BrainLoader } from '../components/ui/BrainLoader';
-import { AmbientBackground } from '../components/ui/AmbientBackground';
 
 export function AuthPage() {
   const { user, profile, loading } = useAuth();
@@ -77,7 +76,6 @@ export function AuthPage() {
   return (
     <div className="obsidian-canvas relative min-h-screen text-white overflow-hidden font-sans">
       <div className="noise-layer" aria-hidden="true" />
-      <AmbientBackground intensity="hero" />
 
       <Link
         to="/"
