@@ -89,15 +89,15 @@ export function MessageBubble({ message, errorDetail, onRetry, onDelete }: Props
             className={`rounded-2xl px-3.5 py-2 shadow-sm ${
               isOut
                 ? isFailed
-                  ? 'bg-red-500 text-white rounded-br-sm'
-                  : 'bg-emerald-600 text-white rounded-br-sm'
-                : 'bg-surface-2 text-white/90 rounded-bl-sm border border-white/[0.08]'
+                  ? 'bg-red-500 text-white rounded-tr-sm'
+                  : 'bg-emerald-600/90 text-white rounded-tr-sm'
+                : 'bg-white/[0.06] text-white/90 rounded-tl-sm border border-white/[0.08]'
             }`}
             title={isFailed && errorDetail ? errorDetail : undefined}
           >
             {message.ai_generated && isOut && (
               <div className="flex items-center gap-1 mb-1 text-[10px] opacity-80">
-                <Sparkles size={10} /> IA
+                <Sparkles size={10} /> Sugerida
               </div>
             )}
             {message.media_url && message.media_type.startsWith('image') && (

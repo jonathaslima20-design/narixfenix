@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Lock, User, Brain, ArrowRight, ArrowLeft } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
-import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { BrainLoader } from '../components/ui/BrainLoader';
 import { AmbientBackground } from '../components/ui/AmbientBackground';
@@ -76,108 +75,131 @@ export function AuthPage() {
   }
 
   return (
-    <div className="relative min-h-screen bg-surface-0 text-white overflow-hidden">
+    <div className="obsidian-canvas relative min-h-screen text-white overflow-hidden font-sans">
+      <div className="noise-layer" aria-hidden="true" />
       <AmbientBackground intensity="hero" />
 
       <Link
         to="/"
-        className="absolute top-6 left-6 z-10 inline-flex items-center gap-1.5 text-sm text-white/60 hover:text-white transition-colors"
+        className="absolute top-6 left-6 z-10 inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.18em] text-white/50 hover:text-white transition-colors"
       >
-        <ArrowLeft size={14} />
+        <ArrowLeft size={12} />
         Voltar
       </Link>
 
       <div className="relative z-[1] min-h-screen flex items-center justify-center px-4 py-12">
         <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          initial={{ opacity: 0, y: 24, filter: 'blur(14px)' }}
+          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           className="w-full max-w-md"
         >
           <div className="flex flex-col items-center text-center mb-8">
-            <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center ring-1 ring-white/15 mb-5">
-              <Brain size={22} className="text-white" />
+            <div className="w-12 h-12 bg-white/[0.04] border border-white/10 rounded-2xl flex items-center justify-center mb-5">
+              <Brain size={22} strokeWidth={1.5} className="text-white/80" />
             </div>
-            <h1 className="text-3xl font-bold tracking-tight leading-tight">
-              {mode === 'login' ? 'Bem-vindo de volta' : 'Criar sua conta'}
+            <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/45">
+              / {mode === 'login' ? 'acesso' : 'novo cadastro'}
+            </span>
+            <h1
+              className="mt-3 font-display font-medium tracking-tightest text-white"
+              style={{ lineHeight: 0.96, fontSize: 'clamp(2rem, 4vw, 2.75rem)' }}
+            >
+              {mode === 'login' ? (
+                <>
+                  <span className="block">Bem-vindo</span>
+                  <span className="block italic-silver">de volta.</span>
+                </>
+              ) : (
+                <>
+                  <span className="block">Crie sua</span>
+                  <span className="block italic-silver">conta.</span>
+                </>
+              )}
             </h1>
-            <p className="mt-2 text-sm text-white/60 leading-relaxed max-w-xs">
+            <p className="mt-4 text-[14px] text-white/55 leading-relaxed max-w-xs">
               {mode === 'login'
-                ? 'Entre na sua conta para continuar transformando leads em vendas.'
+                ? 'Entre para continuar qualificando leads e disparando ofertas.'
                 : 'Comece gratuitamente e organize seus leads em minutos.'}
             </p>
           </div>
 
-          <div className="glass-panel rounded-2xl p-6 sm:p-7 shadow-glow">
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <AnimatePresence mode="wait">
-                {mode === 'register' && (
-                  <motion.div
-                    key="name"
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.2 }}
+          <div className="beam rounded-3xl">
+            <div className="glass rounded-3xl p-6 sm:p-8">
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <AnimatePresence mode="wait">
+                  {mode === 'register' && (
+                    <motion.div
+                      key="name"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <Input
+                        label="Nome completo"
+                        name="full_name"
+                        type="text"
+                        value={form.full_name}
+                        onChange={handleChange}
+                        placeholder="Seu nome"
+                        icon={<User size={15} />}
+                        required
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <Input
+                  label="E-mail"
+                  name="email"
+                  type="email"
+                  value={form.email}
+                  onChange={handleChange}
+                  placeholder="seu@email.com"
+                  icon={<Mail size={15} />}
+                  required
+                />
+
+                <Input
+                  label="Senha"
+                  name="password"
+                  type="password"
+                  value={form.password}
+                  onChange={handleChange}
+                  placeholder="********"
+                  icon={<Lock size={15} />}
+                  required
+                />
+
+                {error && (
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-[13px] text-rose-200 bg-rose-500/10 border border-rose-500/20 px-3 py-2 rounded-xl"
                   >
-                    <Input
-                      label="Nome completo"
-                      name="full_name"
-                      type="text"
-                      value={form.full_name}
-                      onChange={handleChange}
-                      placeholder="Seu nome"
-                      icon={<User size={15} />}
-                      required
-                    />
-                  </motion.div>
+                    {error}
+                  </motion.p>
                 )}
-              </AnimatePresence>
 
-              <Input
-                label="E-mail"
-                name="email"
-                type="email"
-                value={form.email}
-                onChange={handleChange}
-                placeholder="seu@email.com"
-                icon={<Mail size={15} />}
-                required
-              />
-
-              <Input
-                label="Senha"
-                name="password"
-                type="password"
-                value={form.password}
-                onChange={handleChange}
-                placeholder="********"
-                icon={<Lock size={15} />}
-                required
-              />
-
-              {error && (
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="text-sm text-red-300 bg-red-500/10 border border-red-500/20 px-3 py-2 rounded-xl"
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="cta-primary w-full justify-center disabled:opacity-60"
                 >
-                  {error}
-                </motion.p>
-              )}
-
-              <Button type="submit" fullWidth loading={submitting} size="lg">
-                {mode === 'login' ? 'Entrar' : 'Criar conta'}
-                <ArrowRight size={16} />
-              </Button>
-            </form>
+                  <span>{submitting ? 'Enviando...' : mode === 'login' ? 'Entrar' : 'Criar conta'}</span>
+                  <ArrowRight size={14} />
+                </button>
+              </form>
+            </div>
           </div>
 
-          <p className="text-sm text-white/55 text-center mt-6">
-            {mode === 'login' ? 'Nao tem uma conta?' : 'Ja tem uma conta?'}{' '}
+          <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/40 text-center mt-6">
+            {mode === 'login' ? 'Não tem uma conta?' : 'Já tem uma conta?'}{' '}
             <button
               type="button"
               onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setError(''); }}
-              className="font-medium text-white hover:underline underline-offset-4"
+              className="text-white/80 hover:text-white transition-colors"
             >
               {mode === 'login' ? 'Criar conta' : 'Entrar'}
             </button>

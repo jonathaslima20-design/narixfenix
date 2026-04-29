@@ -6,17 +6,21 @@ import { AdminSidebar } from './AdminSidebar';
 import { useAuth } from '../../lib/AuthContext';
 import { BrainLoader } from '../ui/BrainLoader';
 import { AmbientBackground } from '../ui/AmbientBackground';
+import { useMouseSpotlight } from '../../hooks/useMouseSpotlight';
 
 export function AdminLayout() {
   const { user, profile, loading } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  useMouseSpotlight();
 
   if (loading) return <LoadingScreen />;
   if (!user) return <Navigate to="/" replace />;
   if (profile && profile.role !== 'admin') return <Navigate to="/dashboard" replace />;
 
   return (
-    <div className="relative flex min-h-screen bg-surface-0 font-sans text-white"><AmbientBackground intensity="subtle" />
+    <div className="obsidian-canvas relative flex min-h-screen font-sans text-white">
+      <div className="noise-layer" aria-hidden="true" />
+      <AmbientBackground intensity="subtle" />
       {/* Desktop sidebar */}
       <div className="hidden lg:block sticky top-0 h-screen">
         <AdminSidebar />
@@ -48,7 +52,7 @@ export function AdminLayout() {
 
       <div className="relative flex-1 flex flex-col overflow-auto">
         {/* Mobile header */}
-        <div className="sticky top-0 z-30 bg-surface-0/80 backdrop-blur-xl border-b border-white/10 px-4 py-3 flex items-center gap-3 lg:hidden">
+        <div className="sticky top-0 z-30 bg-obsidian/80 backdrop-blur-xl border-b border-white/10 px-4 py-3 flex items-center gap-3 lg:hidden">
           <button
             onClick={() => setSidebarOpen(true)}
             className="p-2 -ml-1 rounded-xl text-white/60 hover:text-white hover:bg-white/10 transition-colors"

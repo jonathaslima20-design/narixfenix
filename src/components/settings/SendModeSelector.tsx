@@ -10,21 +10,21 @@ const MODES: { key: SendMode; title: string; desc: string; icon: typeof Hand; ti
   {
     key: 'manual',
     title: 'Manual',
-    desc: 'Você responde a cada mensagem. A IA apenas sugere quando solicitada.',
+    desc: 'Você responde a cada mensagem. O sistema apenas sugere quando solicitado.',
     icon: Hand,
     tint: 'bg-white/[0.03] border-white/10 text-white/85',
   },
   {
     key: 'approval',
-    title: 'IA com aprovação',
-    desc: 'A IA gera respostas e você aprova, edita ou descarta antes do envio.',
+    title: 'Com aprovação',
+    desc: 'O sistema sugere respostas e você aprova, edita ou descarta antes do envio.',
     icon: CheckCircle2,
     tint: 'bg-amber-50 border-amber-200 text-amber-700',
   },
   {
     key: 'auto',
     title: 'Automático',
-    desc: 'A IA responde sozinha e você pode intervir a qualquer momento.',
+    desc: 'Respostas automáticas pré-definidas com intervenção manual a qualquer momento.',
     icon: Bot,
     tint: 'bg-emerald-50 border-emerald-200 text-emerald-700',
   },
@@ -99,7 +99,7 @@ export function SendModeSelector() {
         <div>
           <h2 className="text-sm font-semibold text-white">Modo de envio de mensagens</h2>
           <p className="text-xs text-white/40 mt-0.5">
-            Escolha como a IA participa nas respostas aos seus leads.
+            Escolha como o sistema participa nas respostas aos seus leads.
           </p>
         </div>
         <button

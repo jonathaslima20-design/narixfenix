@@ -232,7 +232,7 @@ export function ChatComposer({
         <div className="mx-4 mt-3 p-3 bg-emerald-50 border border-emerald-200 rounded-2xl">
           <div className="flex items-center gap-1.5 mb-2">
             <Sparkles size={12} className="text-emerald-600" />
-            <span className="text-xs font-semibold text-emerald-700">Sugestao da IA (aguardando aprovacao)</span>
+            <span className="text-xs font-semibold text-emerald-700">Sugestão automática (aguardando aprovação)</span>
           </div>
           {editingSuggestion ? (
             <textarea
@@ -458,7 +458,7 @@ export function ChatComposer({
               onChange={(e) => setText(e.target.value)}
               onKeyDown={onKey}
               placeholder={
-                sendMode === 'auto' ? 'IA responde automaticamente (voce pode intervir aqui)' : 'Digite uma mensagem'
+                sendMode === 'auto' ? 'Resposta automática ativa (você pode intervir aqui)' : 'Digite uma mensagem'
               }
               disabled={disabled || isBusy}
               rows={1}

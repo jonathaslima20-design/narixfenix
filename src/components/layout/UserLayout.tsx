@@ -8,6 +8,7 @@ import { SubscriptionProvider, useSubscriptionCtx } from '../../lib/Subscription
 import { PricingModal } from '../ui/PricingModal';
 import { BrainLoader } from '../ui/BrainLoader';
 import { AmbientBackground } from '../ui/AmbientBackground';
+import { useMouseSpotlight } from '../../hooks/useMouseSpotlight';
 
 export function UserLayout() {
   const { user, profile, loading } = useAuth();
@@ -27,11 +28,14 @@ function UserLayoutInner() {
   const { profile } = useAuth();
   const { isBlocked, loading: subLoading, isTrial, daysLeft, sendCount, plan } = useSubscriptionCtx();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  useMouseSpotlight();
 
   const accountDisabled = profile?.is_enabled === false;
 
   return (
-    <div className="relative flex min-h-screen bg-surface-0 font-sans text-white"><AmbientBackground intensity="subtle" />
+    <div className="obsidian-canvas relative flex min-h-screen font-sans text-white">
+      <div className="noise-layer" aria-hidden="true" />
+      <AmbientBackground intensity="subtle" />
       {/* Desktop sidebar */}
       <div className="hidden lg:block sticky top-0 h-screen">
         <UserSidebar />
@@ -63,7 +67,7 @@ function UserLayoutInner() {
 
       <div className="relative flex-1 flex flex-col overflow-auto">
         {/* Mobile header */}
-        <div className="sticky top-0 z-30 bg-surface-0/80 backdrop-blur-xl border-b border-white/10 px-4 py-3 flex items-center gap-3 lg:hidden">
+        <div className="sticky top-0 z-30 bg-obsidian/80 backdrop-blur-xl border-b border-white/10 px-4 py-3 flex items-center gap-3 lg:hidden">
           <button
             onClick={() => setSidebarOpen(true)}
             className="p-2 -ml-1 rounded-xl text-white hover:bg-white/10 transition-colors"

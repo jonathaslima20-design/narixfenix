@@ -71,7 +71,7 @@ const LIMIT_FIELDS: { key: keyof PlanForm; label: string; icon: typeof Users }[]
   { key: 'max_whatsapp_instances', label: 'Instâncias WhatsApp', icon: Smartphone },
   { key: 'max_templates', label: 'Templates', icon: FileText },
   { key: 'max_automation_rules', label: 'Regras de automação', icon: Settings2 },
-  { key: 'max_ai_tokens_per_month', label: 'Tokens IA / mes', icon: Zap },
+  { key: 'max_ai_tokens_per_month', label: 'Tokens / mês', icon: Zap },
   { key: 'max_sends', label: 'Limite de envios', icon: Send },
 ];
 

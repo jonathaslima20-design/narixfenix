@@ -14,7 +14,11 @@ import {
   AlertTriangle,
   CheckCircle2,
   WifiOff,
+  Flame,
+  Thermometer,
+  Snowflake,
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { Card } from '../../components/ui/Card';
 import { Plan } from '../../lib/types';
@@ -45,6 +49,12 @@ interface HealthStat {
   disconnected: number;
   failedSends: number;
   totalInstances: number;
+}
+
+interface LeadTempStat {
+  cold: number;
+  warm: number;
+  hot: number;
 }
 
 const PERIOD_OPTIONS = [
@@ -85,6 +95,7 @@ export function AdminOverview() {
   const [planDist, setPlanDist] = useState<PlanDist[]>([]);
   const [recentLogs, setRecentLogs] = useState<{ id: string; email: string; tokens_in: number; tokens_out: number; created_at: string }[]>([]);
   const [health, setHealth] = useState<HealthStat>({ connected: 0, disconnected: 0, failedSends: 0, totalInstances: 0 });
+  const [leadTemp, setLeadTemp] = useState<LeadTempStat>({ cold: 0, warm: 0, hot: 0 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -108,6 +119,9 @@ export function AdminOverview() {
         newLeadsRes,
         prevNewLeadsRes,
         failedSendsRes,
+        coldRes,
+        warmRes,
+        hotRes,
       ] = await Promise.all([
         supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'user'),
         supabase.from('whatsapp_instances').select('status', { count: 'exact' }),
@@ -121,6 +135,9 @@ export function AdminOverview() {
         supabase.from('leads').select('id', { count: 'exact', head: true }).gte('created_at', currentStart),
         supabase.from('leads').select('id', { count: 'exact', head: true }).gte('created_at', previousStart).lt('created_at', currentStart),
         supabase.from('whatsapp_send_logs').select('id', { count: 'exact', head: true }).not('error_message', 'is', null).gte('created_at', currentStart),
+        supabase.from('leads').select('id', { count: 'exact', head: true }).eq('category', 'cold'),
+        supabase.from('leads').select('id', { count: 'exact', head: true }).eq('category', 'warm'),
+        supabase.from('leads').select('id', { count: 'exact', head: true }).eq('category', 'hot'),
       ]);
 
       const totalInstances = instancesAllRes.count || 0;
@@ -143,6 +160,12 @@ export function AdminOverview() {
         disconnected: Math.max(totalInstances - connected, 0),
         failedSends: failedSendsRes.count || 0,
         totalInstances,
+      });
+
+      setLeadTemp({
+        cold: coldRes.count || 0,
+        warm: warmRes.count || 0,
+        hot: hotRes.count || 0,
       });
 
       const planMap = new Map<string, Plan>();
@@ -265,33 +288,102 @@ export function AdminOverview() {
     },
   ];
 
+  const totalTempLeads = leadTemp.cold + leadTemp.warm + leadTemp.hot;
+  const tempTiles = [
+    {
+      key: 'hot' as const,
+      label: 'Quentes',
+      value: leadTemp.hot,
+      icon: Flame,
+      gradient: 'from-orange-400 to-rose-400',
+      accent: 'text-rose-300',
+    },
+    {
+      key: 'warm' as const,
+      label: 'Mornos',
+      value: leadTemp.warm,
+      icon: Thermometer,
+      gradient: 'from-amber-400 to-orange-400',
+      accent: 'text-amber-300',
+    },
+    {
+      key: 'cold' as const,
+      label: 'Frios',
+      value: leadTemp.cold,
+      icon: Snowflake,
+      gradient: 'from-sky-400 to-slate-400',
+      accent: 'text-sky-300',
+    },
+  ];
+
   return (
-    <div className="p-4 sm:p-6 lg:p-8">
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-5xl mx-auto">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-8">
+    <div className="relative p-4 sm:p-6 lg:p-8">
+      <motion.div
+        initial={{ opacity: 0, y: 14, filter: 'blur(14px)' }}
+        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+        className="max-w-6xl mx-auto"
+      >
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-10">
           <div>
-            <h1 className="text-2xl font-bold text-white">Visão Geral</h1>
-            <p className="text-sm text-white/55 mt-1">Monitoramento global da plataforma BrainLead.</p>
+            <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/45">/ visão geral</span>
+            <h1
+              className="mt-3 font-display font-medium tracking-tightest text-white"
+              style={{ lineHeight: 0.96, fontSize: 'clamp(2rem, 4vw, 3rem)' }}
+            >
+              <span className="block">Monitoramento</span>
+              <span className="block italic-silver">em tempo real.</span>
+            </h1>
           </div>
           <PeriodSelect value={period} onChange={setPeriod} />
         </div>
 
-        {/* Stat cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
-          {statCards.map((card) => (
-            <Card key={card.label}>
-              <div className="flex items-start justify-between mb-3">
-                <div className={`w-10 h-10 ${card.bg} rounded-xl flex items-center justify-center`}>
-                  <card.icon size={18} className={card.color} />
+        {/* Bento grid: lead temperature + key metrics */}
+        <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-10">
+          {tempTiles.map((t) => (
+            <MetricTile
+              key={t.key}
+              label={t.label}
+              value={t.value}
+              total={totalTempLeads}
+              Icon={t.icon}
+              gradient={t.gradient}
+              accent={t.accent}
+              loading={loading}
+              className="md:col-span-2"
+            />
+          ))}
+
+          {statCards.map((card, i) => (
+            <motion.div
+              key={card.label}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05 * i, duration: 0.5 }}
+              className="glass rounded-3xl p-6 md:col-span-3 lg:col-span-3 xl:col-span-3 relative overflow-hidden"
+              style={{ gridColumn: 'span 3 / span 3' }}
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-2">
+                  <card.icon size={14} strokeWidth={1.5} className="text-white/70" />
+                  <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/45">
+                    {card.label}
+                  </span>
                 </div>
                 {card.delta.label && <DeltaBadge direction={card.delta.direction} label={card.delta.label} />}
               </div>
-              <p className="text-2xl font-bold text-white">
-                {loading ? <span className="w-10 h-6 bg-white/[0.06] rounded animate-pulse inline-block" /> : card.value}
+              <p
+                className="mt-6 font-display font-medium tracking-tightest text-white"
+                style={{ fontSize: 'clamp(2rem, 3.5vw, 3rem)', lineHeight: 1 }}
+              >
+                {loading ? (
+                  <span className="inline-block h-10 w-24 rounded bg-white/[0.06] animate-pulse" />
+                ) : (
+                  card.value
+                )}
               </p>
-              <p className="text-xs text-white/55 mt-0.5">{card.label}</p>
-              {card.sub && <p className="text-xs text-white/40 mt-1.5">{card.sub}</p>}
-            </Card>
+              {card.sub && <p className="mt-3 text-[12px] text-white/45">{card.sub}</p>}
+            </motion.div>
           ))}
         </div>
 
@@ -391,12 +483,12 @@ export function AdminOverview() {
           </Card>
         </div>
 
-        {/* Recent AI activity */}
+        {/* Recent qualification activity */}
         <div>
           <Card>
             <div className="flex items-center gap-2 mb-4">
               <Activity size={16} className="text-white/40" />
-              <h2 className="text-sm font-semibold text-white">Atividade Recente de IA</h2>
+              <h2 className="text-sm font-semibold text-white">Atividade Recente</h2>
             </div>
 
             {loading ? (
@@ -447,6 +539,64 @@ export function AdminOverview() {
 
 function PeriodSelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return <Select value={value} onChange={onChange} options={PERIOD_OPTIONS.map((o) => ({ value: o.value, label: o.label }))} />;
+}
+
+function MetricTile({
+  label,
+  value,
+  total,
+  Icon,
+  gradient,
+  accent,
+  loading,
+  className = '',
+}: {
+  label: string;
+  value: number;
+  total: number;
+  Icon: LucideIcon;
+  gradient: string;
+  accent: string;
+  loading: boolean;
+  className?: string;
+}) {
+  const pct = total > 0 ? Math.round((value / total) * 100) : 0;
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className={`metric-tile ${className}`}
+    >
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Icon size={14} strokeWidth={1.5} className={accent} />
+          <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/45">
+            {label}
+          </span>
+        </div>
+        <span className="font-mono text-[10px] text-white/30">{pct}%</span>
+      </div>
+      <div
+        className="mt-5 font-display font-medium tracking-tightest text-white"
+        style={{ fontSize: 'clamp(2rem, 3.5vw, 3rem)', lineHeight: 1 }}
+      >
+        {loading ? (
+          <span className="inline-block h-10 w-20 rounded bg-white/[0.06] animate-pulse" />
+        ) : (
+          value.toLocaleString('pt-BR')
+        )}
+      </div>
+      <div className="mt-5 h-1 w-full overflow-hidden rounded-full bg-white/5">
+        <motion.div
+          className={`h-full rounded-full bg-gradient-to-r ${gradient}`}
+          initial={{ width: 0 }}
+          animate={{ width: `${pct}%` }}
+          transition={{ duration: 0.8, ease: 'easeOut' }}
+        />
+      </div>
+    </motion.div>
+  );
 }
 
 function DeltaBadge({ direction, label }: { direction: 'up' | 'down' | 'flat'; label: string }) {

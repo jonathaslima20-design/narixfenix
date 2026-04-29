@@ -98,7 +98,7 @@ export function ConversationList({
   }
 
   return (
-    <div className="flex flex-col h-full bg-surface-1 border-r border-white/[0.08]">
+    <div className="flex flex-col h-full glass border-r border-white/[0.08]">
       <div className="p-4 border-b border-white/[0.08]">
         <div className="relative">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />

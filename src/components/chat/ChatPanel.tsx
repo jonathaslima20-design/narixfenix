@@ -768,15 +768,15 @@ export function ChatPanel({ lead, userId, sendMode, onOpenDetails, onLeadUpdated
 
   const modeLabel: Record<SendMode, string> = {
     manual: 'Manual',
-    auto: 'Auto IA',
-    approval: 'IA c/ aprovação',
+    auto: 'Automático',
+    approval: 'Com aprovação',
   };
 
   const isDisconnected = instanceStatus === 'disconnected' || instanceStatus === 'error';
 
   return (
-    <div className="flex flex-col h-full bg-surface-0">
-      <div className="flex items-center justify-between px-4 py-3 bg-surface-2 border-b border-white/[0.08] shadow-sm">
+    <div className="flex flex-col h-full bg-transparent">
+      <div className="flex items-center justify-between px-4 py-3 glass border-b border-white/[0.08]">
         <div className="flex items-center gap-3">
           {lead.profile_picture_url ? (
             <img

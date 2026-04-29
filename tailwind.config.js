@@ -13,10 +13,10 @@ export default {
         ink: '#0a0a0a',
         silver: '#c9cdd4',
         surface: {
-          0: '#0B0E11',
-          1: '#11151A',
-          2: '#161B22',
-          3: '#1C2230',
+          0: '#050505',
+          1: '#0a0a0a',
+          2: '#111418',
+          3: '#1a1e24',
         },
       },
       letterSpacing: {
