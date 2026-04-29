@@ -4,22 +4,23 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
-        display: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+        sans: ['"Inter Tight"', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+        display: ['"Inter Tight"', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+        mono: ['"Geist Mono"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
       },
       colors: {
+        obsidian: '#050505',
+        ink: '#0a0a0a',
+        silver: '#c9cdd4',
         surface: {
           0: '#0B0E11',
           1: '#11151A',
           2: '#161B22',
           3: '#1C2230',
         },
-        ink: {
-          primary: '#FFFFFF',
-          secondary: 'rgba(255,255,255,0.72)',
-          muted: 'rgba(255,255,255,0.55)',
-          faint: 'rgba(255,255,255,0.40)',
-        },
+      },
+      letterSpacing: {
+        tightest: '-0.07em',
       },
       boxShadow: {
         glow: '0 10px 40px -10px rgba(255,255,255,0.18)',

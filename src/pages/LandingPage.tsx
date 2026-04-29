@@ -1,0 +1,705 @@
+import { useEffect, useRef, useState, type ReactNode, type MouseEvent } from 'react';
+import {
+  Brain,
+  MessageSquare,
+  Layers,
+  Send,
+  Sparkles,
+  ArrowRight,
+  Check,
+  CheckCheck,
+  Circle,
+} from 'lucide-react';
+import { supabase } from '../lib/supabase';
+
+function useMouseSpotlight() {
+  useEffect(() => {
+    let targetX = 50;
+    let targetY = 30;
+    let curX = 50;
+    let curY = 30;
+    let raf = 0;
+
+    const onMove = (e: MouseEvent | globalThis.MouseEvent) => {
+      targetX = (e.clientX / window.innerWidth) * 100;
+      targetY = (e.clientY / window.innerHeight) * 100;
+    };
+
+    const tick = () => {
+      curX += (targetX - curX) * 0.06;
+      curY += (targetY - curY) * 0.06;
+      document.documentElement.style.setProperty('--mx', `${curX}%`);
+      document.documentElement.style.setProperty('--my', `${curY}%`);
+      raf = requestAnimationFrame(tick);
+    };
+
+    window.addEventListener('mousemove', onMove as (e: globalThis.MouseEvent) => void);
+    raf = requestAnimationFrame(tick);
+    return () => {
+      window.removeEventListener('mousemove', onMove as (e: globalThis.MouseEvent) => void);
+      cancelAnimationFrame(raf);
+    };
+  }, []);
+}
+
+function useReveal() {
+  useEffect(() => {
+    const els = document.querySelectorAll<HTMLElement>('.reveal');
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            io.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.12 }
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, []);
+}
+
+function Tilt({ children, className = '' }: { children: ReactNode; className?: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  const onMove = (e: MouseEvent<HTMLDivElement>) => {
+    const el = ref.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width;
+    const y = (e.clientY - rect.top) / rect.height;
+    const rx = (0.5 - y) * 6;
+    const ry = (x - 0.5) * 6;
+    el.style.transform = `perspective(1200px) rotateX(${rx}deg) rotateY(${ry}deg)`;
+  };
+
+  const onLeave = () => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.transform = 'perspective(1200px) rotateX(0deg) rotateY(0deg)';
+  };
+
+  return (
+    <div
+      ref={ref}
+      onMouseMove={onMove}
+      onMouseLeave={onLeave}
+      className={`transition-transform duration-300 ease-out will-change-transform ${className}`}
+    >
+      {children}
+    </div>
+  );
+}
+
+function Header() {
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  return (
+    <header
+      className={`fixed top-0 left-1/2 -translate-x-1/2 z-50 w-full max-w-6xl transition-all duration-500 ${
+        scrolled ? 'px-4 pt-3' : 'px-6 pt-6'
+      }`}
+    >
+      <div
+        className={`flex items-center justify-between transition-all duration-500 ${
+          scrolled
+            ? 'bg-black/60 backdrop-blur-xl border border-white/5 rounded-full px-4 py-2'
+            : 'px-2 py-1'
+        }`}
+      >
+        <a href="#" className="flex items-center gap-2" aria-label="BrainLead">
+          <Brain size={18} strokeWidth={1.5} className="text-white/80" />
+          <span className="font-mono text-[13px] tracking-tight text-white/90">brainlead</span>
+        </a>
+
+        <nav aria-label="Principal" className="hidden md:flex items-center gap-8">
+          <a href="#recursos" className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/50 hover:text-white transition-colors">
+            Recursos
+          </a>
+          <a href="#planos" className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/50 hover:text-white transition-colors">
+            Planos
+          </a>
+          <a href="#como" className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/50 hover:text-white transition-colors">
+            Como Funciona
+          </a>
+        </nav>
+
+        <a
+          href="#planos"
+          className="beam relative rounded-full px-4 py-2 font-mono text-[11px] uppercase tracking-[0.16em] text-white/90 bg-white/[0.03] border border-white/10"
+        >
+          Começar agora
+        </a>
+      </div>
+    </header>
+  );
+}
+
+function Hero({ onOpenLead }: { onOpenLead: () => void }) {
+  return (
+    <section className="relative pt-48 pb-32 px-6">
+      <div className="mx-auto max-w-6xl flex flex-col items-center text-center">
+        <div className="reveal inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.02] px-3 py-1.5">
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+          </span>
+          <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/60">
+            Conecte. Organize. Converta.
+          </span>
+        </div>
+
+        <h1
+          className="reveal mt-10 font-display font-medium tracking-tightest text-white"
+          style={{ lineHeight: 0.92, fontSize: 'clamp(3.5rem, 10vw, 9rem)' }}
+        >
+          <span className="block">Transforme leads em</span>
+          <span className="block italic-silver">vendas reais.</span>
+        </h1>
+
+        <p className="reveal mt-8 max-w-2xl text-[17px] leading-[1.5] text-white/55">
+          Organize seus contatos, gerencie conversas e dispare ofertas de forma simples e eficiente.
+        </p>
+
+        <div className="reveal mt-10 flex flex-wrap items-center justify-center gap-3">
+          <button onClick={onOpenLead} className="cta-primary group">
+            <span>Começar gratuitamente</span>
+            <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
+          </button>
+          <a href="#planos" className="ghost-btn">Ver planos</a>
+        </div>
+
+        <div className="reveal mt-20 w-full">
+          <div className="hairline" />
+          <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+            {['whatsapp nativo', 'funil kanban', 'disparos em massa', 'ia de priorização'].map((label) => (
+              <div
+                key={label}
+                className="flex items-center justify-center gap-2 font-mono text-[11px] uppercase tracking-[0.18em] text-white/35"
+              >
+                <Circle size={6} className="fill-white/40 text-white/40" />
+                <span>{label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ChatMockup() {
+  return (
+    <div className="mt-8 rounded-2xl border border-white/5 bg-black/30 p-5">
+      <div className="flex items-center gap-3">
+        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-slate-500 to-slate-700 font-mono text-[11px] text-white">
+          MR
+        </div>
+        <div className="flex-1">
+          <div className="text-[13px] text-white">Marina Ribeiro</div>
+          <div className="flex items-center gap-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+            <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-emerald-400/80">online</span>
+          </div>
+        </div>
+        <div className="font-mono text-[10px] text-white/40">14:02</div>
+      </div>
+
+      <div className="mt-4 space-y-2">
+        <div className="max-w-[75%] rounded-2xl rounded-tl-sm bg-white/[0.04] px-4 py-2 text-[13px] text-white/80">
+          Olá! Vi seu anúncio, ainda dá tempo?
+        </div>
+        <div className="ml-auto flex max-w-[75%] items-end gap-1 rounded-2xl rounded-tr-sm border border-emerald-400/20 bg-emerald-400/10 px-4 py-2 text-[13px] text-white/90">
+          <span>Sim! Posso te enviar a oferta?</span>
+          <CheckCheck size={13} className="text-emerald-400/80 shrink-0" />
+        </div>
+        <div className="max-w-[75%] rounded-2xl rounded-tl-sm bg-white/[0.04] px-4 py-2 text-[13px] text-white/80">
+          Quero fechar hoje.
+        </div>
+        <div className="flex items-center gap-1 px-2 pt-1">
+          <span className="typing-dot h-1.5 w-1.5 rounded-full bg-white/50" style={{ animationDelay: '0ms' }} />
+          <span className="typing-dot h-1.5 w-1.5 rounded-full bg-white/50" style={{ animationDelay: '150ms' }} />
+          <span className="typing-dot h-1.5 w-1.5 rounded-full bg-white/50" style={{ animationDelay: '300ms' }} />
+          <span className="ml-2 font-mono text-[10px] uppercase tracking-[0.18em] text-white/40">digitando</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FunnelMockup() {
+  const stages = [
+    { label: 'Novo', count: 12, color: 'bg-white' },
+    { label: 'Qualificando', count: 7, color: 'bg-amber-400' },
+    { label: 'Proposta', count: 4, color: 'bg-sky-400' },
+    { label: 'Fechado', count: 3, color: 'bg-emerald-400' },
+  ];
+  return (
+    <div className="mt-6 space-y-2">
+      {stages.map((s) => (
+        <div key={s.label} className="flex items-center justify-between rounded-xl border border-white/5 bg-white/[0.02] px-4 py-3">
+          <div className="flex items-center gap-3">
+            <span className={`h-2 w-2 rounded-full ${s.color}`} />
+            <span className="text-[13px] text-white/80">{s.label}</span>
+          </div>
+          <span className="font-mono text-[12px] text-white/50">{s.count}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function CampaignGraph() {
+  return (
+    <div className="mt-6 h-32 w-full">
+      <svg viewBox="0 0 320 120" className="h-full w-full" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="graph-line" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="#6366f1" stopOpacity="0.8" />
+            <stop offset="100%" stopColor="#94a3b8" stopOpacity="0.9" />
+          </linearGradient>
+          <linearGradient id="graph-fill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#6366f1" stopOpacity="0.18" />
+            <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <path
+          d="M 0 100 C 40 90, 70 85, 100 75 S 160 55, 200 45 S 260 25, 320 15 L 320 120 L 0 120 Z"
+          fill="url(#graph-fill)"
+        />
+        <path
+          d="M 0 100 C 40 90, 70 85, 100 75 S 160 55, 200 45 S 260 25, 320 15"
+          fill="none"
+          stroke="url(#graph-line)"
+          strokeWidth="1.5"
+        />
+        {[
+          [0, 100], [80, 78], [160, 58], [240, 32], [320, 15],
+        ].map(([x, y], i) => (
+          <circle key={i} cx={x} cy={y} r="3.5" fill="#0a0a0a" stroke="#c9cdd4" strokeWidth="1" />
+        ))}
+      </svg>
+    </div>
+  );
+}
+
+function LeadIntelligence() {
+  const metrics = [
+    { label: 'Quente', value: 92, gradient: 'from-orange-400 to-rose-400' },
+    { label: 'Morno', value: 54, gradient: 'from-amber-400 to-orange-400' },
+    { label: 'Frio', value: 21, gradient: 'from-sky-400 to-slate-400' },
+  ];
+  return (
+    <div className="mt-6 grid grid-cols-3 gap-3">
+      {metrics.map((m) => (
+        <div key={m.label} className="rounded-2xl border border-white/5 bg-white/[0.02] p-4">
+          <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/45">{m.label}</div>
+          <div className="mt-2 font-display text-2xl font-medium tracking-tight text-white">{m.value}</div>
+          <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-white/5">
+            <div
+              className={`h-full rounded-full bg-gradient-to-r ${m.gradient}`}
+              style={{ width: `${m.value}%` }}
+            />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function Bento() {
+  return (
+    <section id="recursos" className="relative px-6 py-24">
+      <div className="mx-auto max-w-6xl">
+        <div className="reveal">
+          <span className="micro-caps">/ recursos</span>
+          <h2
+            className="mt-4 font-display font-medium tracking-tightest text-white"
+            style={{ lineHeight: 0.96, fontSize: 'clamp(2.5rem, 5vw, 4.5rem)' }}
+          >
+            <span className="block">Tudo em um só lugar,</span>
+            <span className="block italic-silver">sem fricção.</span>
+          </h2>
+        </div>
+
+        <div className="mt-14 grid grid-cols-1 md:grid-cols-6 gap-4">
+          <Tilt className="reveal md:col-span-4">
+            <div className="glass rounded-3xl p-8 min-h-[420px] relative">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-2">
+                  <MessageSquare size={16} strokeWidth={1.5} className="text-white/70" />
+                  <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/45">chat integrado</span>
+                </div>
+                <span className="font-mono text-[11px] text-white/10">01</span>
+              </div>
+              <h3 className="mt-6 font-display text-3xl md:text-4xl font-medium tracking-tight leading-[1.05] text-white max-w-xl">
+                Conecte seu WhatsApp e centralize sua coleta de leads em um único painel.
+              </h3>
+              <ChatMockup />
+            </div>
+          </Tilt>
+
+          <Tilt className="reveal md:col-span-2">
+            <div className="glass rounded-3xl p-8 min-h-[420px] flex flex-col">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-2">
+                  <Layers size={16} strokeWidth={1.5} className="text-white/70" />
+                  <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/45">gestão de funil</span>
+                </div>
+                <span className="font-mono text-[11px] text-white/10">02</span>
+              </div>
+              <FunnelMockup />
+              <h3 className="mt-auto pt-6 font-display text-xl md:text-2xl font-medium tracking-tight leading-[1.1] text-white">
+                Organize e categorize seus contatos conforme o momento da negociação.
+              </h3>
+            </div>
+          </Tilt>
+
+          <Tilt className="reveal md:col-span-3">
+            <div className="glass rounded-3xl p-8 min-h-[300px] flex flex-col">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-2">
+                  <Send size={16} strokeWidth={1.5} className="text-white/70" />
+                  <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/45">envios estratégicos</span>
+                </div>
+                <span className="font-mono text-[11px] text-white/10">03</span>
+              </div>
+              <CampaignGraph />
+              <h3 className="mt-auto pt-6 font-display text-xl md:text-2xl font-medium tracking-tight leading-[1.1] text-white">
+                Realize campanhas de massa e alcance seu público com agilidade.
+              </h3>
+            </div>
+          </Tilt>
+
+          <Tilt className="reveal md:col-span-3">
+            <div className="glass rounded-3xl p-8 min-h-[300px] flex flex-col">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-2">
+                  <Sparkles size={16} strokeWidth={1.5} className="text-white/70" />
+                  <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/45">inteligência de leads</span>
+                </div>
+                <span className="font-mono text-[11px] text-white/10">04</span>
+              </div>
+              <LeadIntelligence />
+              <h3 className="mt-auto pt-6 font-display text-xl md:text-2xl font-medium tracking-tight leading-[1.1] text-white">
+                Categorize automaticamente seus contatos e priorize quem está pronto para comprar.
+              </h3>
+            </div>
+          </Tilt>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function HowItWorks() {
+  const steps = [
+    {
+      n: '01',
+      title: 'Conecte em segundos',
+      desc: 'Integre seu WhatsApp em poucos cliques. Sem APIs complexas, sem configuração técnica.',
+    },
+    {
+      n: '02',
+      title: 'Organize seus leads',
+      desc: 'Classifique contatos por estágio, tag ou prioridade em um funil visual.',
+    },
+    {
+      n: '03',
+      title: 'Dispare campanhas',
+      desc: 'Envie ofertas segmentadas para o público certo, no momento certo.',
+    },
+  ];
+  return (
+    <section id="como" className="relative px-6 py-24">
+      <div className="mx-auto max-w-6xl">
+        <div className="reveal">
+          <span className="micro-caps">/ como funciona</span>
+          <h2
+            className="mt-4 font-display font-medium tracking-tightest text-white"
+            style={{ lineHeight: 0.96, fontSize: 'clamp(2.5rem, 5vw, 4.5rem)' }}
+          >
+            <span className="block">Três passos.</span>
+            <span className="block italic-silver">Zero complicação.</span>
+          </h2>
+        </div>
+
+        <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-10">
+          {steps.map((s) => (
+            <div key={s.n} className="reveal">
+              <div
+                className="font-mono leading-none text-white/[0.08]"
+                style={{ fontSize: 'clamp(6rem, 10vw, 10rem)' }}
+              >
+                {s.n}
+              </div>
+              <div className="mt-6 hairline" />
+              <h3 className="mt-6 font-display text-2xl font-medium tracking-tight text-white">{s.title}</h3>
+              <p className="mt-3 max-w-xs text-[15px] leading-[1.5] text-white/50">{s.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Pricing({ onOpenLead }: { onOpenLead: () => void }) {
+  const plans = [
+    {
+      name: 'Trial',
+      price: 'R$ 0',
+      period: '3 dias',
+      features: ['3 dias de teste', 'Chat integrado', 'Gestão de funil', 'Campanhas de massa'],
+      cta: 'Começar teste',
+      variant: 'ghost' as const,
+    },
+    {
+      name: 'Pro Mensal',
+      price: 'R$ 49',
+      period: '/mês',
+      features: ['Envios ilimitados', 'Todas as funções Pro', 'Suporte prioritário', 'Relatórios avançados'],
+      cta: 'Assinar mensal',
+      variant: 'ghost' as const,
+    },
+    {
+      name: 'Pro Anual',
+      price: 'R$ 389',
+      period: '/ano',
+      badge: 'Economize 34%',
+      features: ['Pagamento único', 'Envios ilimitados', 'Todas as funções Pro', 'Suporte dedicado'],
+      cta: 'Assinar anual',
+      variant: 'primary' as const,
+      beam: true,
+    },
+  ];
+
+  return (
+    <section id="planos" className="relative px-6 py-24">
+      <div className="mx-auto max-w-6xl">
+        <div className="reveal text-center">
+          <span className="micro-caps">/ planos</span>
+          <h2
+            className="mt-4 font-display font-medium tracking-tightest text-white"
+            style={{ lineHeight: 0.96, fontSize: 'clamp(2.5rem, 5vw, 4.5rem)' }}
+          >
+            <span className="block">Preço justo.</span>
+            <span className="block italic-silver">Resultado imediato.</span>
+          </h2>
+        </div>
+
+        <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-5">
+          {plans.map((p) => (
+            <Tilt key={p.name} className="reveal">
+              <div className={`glass rounded-3xl p-8 min-h-[480px] flex flex-col ${p.beam ? 'beam' : ''}`}>
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/60">{p.name}</span>
+                  {p.badge && (
+                    <span className="rounded-full bg-white text-black px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.14em]">
+                      {p.badge}
+                    </span>
+                  )}
+                </div>
+
+                <div className="mt-6 flex items-end gap-2">
+                  <span className="font-display text-6xl font-medium tracking-tightest text-white leading-none">{p.price}</span>
+                  <span className="font-mono text-[12px] text-white/40 pb-2">{p.period}</span>
+                </div>
+
+                <div className="mt-6 hairline" />
+
+                <ul className="mt-6 space-y-3 flex-1">
+                  {p.features.map((f) => (
+                    <li key={f} className="flex items-center gap-2.5 text-[14px] text-white/75">
+                      <Check size={14} strokeWidth={1.8} className="text-white/70 shrink-0" />
+                      <span>{f}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <button
+                  onClick={onOpenLead}
+                  className={p.variant === 'primary' ? 'cta-primary mt-6 w-full justify-center' : 'ghost-btn mt-6 w-full justify-center'}
+                >
+                  {p.cta}
+                </button>
+              </div>
+            </Tilt>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Closing({ onOpenLead }: { onOpenLead: () => void }) {
+  return (
+    <section className="relative px-6 py-32">
+      <div className="mx-auto max-w-6xl text-center reveal">
+        <h2
+          className="font-display font-medium tracking-tightest text-white"
+          style={{ lineHeight: 0.92, fontSize: 'clamp(3rem, 8vw, 7rem)' }}
+        >
+          <span className="block">Pronto para</span>
+          <span className="block italic-silver">vender mais?</span>
+        </h2>
+        <div className="mt-10">
+          <button onClick={onOpenLead} className="cta-primary group">
+            <span>Começar gratuitamente</span>
+            <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
+          </button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Footer() {
+  return (
+    <footer className="relative px-6 pb-10">
+      <div className="mx-auto max-w-6xl">
+        <div className="hairline" />
+        <div className="mt-8 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-2">
+            <Brain size={18} strokeWidth={1.5} className="text-white/80" />
+            <span className="font-mono text-[13px] text-white/90">brainlead</span>
+          </div>
+          <nav aria-label="Rodapé" className="flex flex-wrap items-center justify-center gap-6">
+            {['recursos', 'planos', 'como funciona', 'privacidade', 'termos'].map((l) => (
+              <a
+                key={l}
+                href={l === 'recursos' ? '#recursos' : l === 'planos' ? '#planos' : l === 'como funciona' ? '#como' : '#'}
+                className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/40 hover:text-white/70 transition-colors"
+              >
+                {l}
+              </a>
+            ))}
+          </nav>
+        </div>
+        <div className="mt-8 text-center micro-caps !text-white/30">
+          © 2026 brainlead — todos os direitos reservados
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+function LeadModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const [email, setEmail] = useState('');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open, onClose]);
+
+  if (!open) return null;
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !email.includes('@')) {
+      setError('Informe um e-mail válido');
+      setStatus('error');
+      return;
+    }
+    setStatus('loading');
+    setError('');
+    const { error: err } = await supabase.from('landing_leads').insert({ email, source: 'landing' });
+    if (err) {
+      setError('Não foi possível enviar. Tente novamente.');
+      setStatus('error');
+      return;
+    }
+    setStatus('success');
+  };
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      className="fixed inset-0 z-[100] flex items-center justify-center px-6"
+      onClick={onClose}
+    >
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-md" />
+      <div
+        className="glass relative z-10 w-full max-w-md rounded-3xl p-8"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <span className="micro-caps">/ acesso antecipado</span>
+        <h3 className="mt-3 font-display text-3xl font-medium tracking-tight text-white">
+          Deixe seu e-mail
+        </h3>
+        <p className="mt-2 text-[14px] text-white/55">
+          Avisaremos assim que sua conta estiver pronta para começar.
+        </p>
+
+        {status === 'success' ? (
+          <div className="mt-6 rounded-2xl border border-emerald-400/20 bg-emerald-400/10 p-4 text-[14px] text-emerald-200">
+            Obrigado! Entraremos em contato em breve.
+          </div>
+        ) : (
+          <form onSubmit={submit} className="mt-6 space-y-3">
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="voce@email.com"
+              className="w-full rounded-full border border-white/10 bg-white/[0.02] px-5 py-3 text-[14px] text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none"
+            />
+            {error && <p className="text-[12px] text-rose-300">{error}</p>}
+            <button
+              type="submit"
+              disabled={status === 'loading'}
+              className="cta-primary w-full justify-center disabled:opacity-60"
+            >
+              {status === 'loading' ? 'Enviando…' : 'Enviar'}
+            </button>
+          </form>
+        )}
+
+        <button
+          onClick={onClose}
+          className="mt-4 w-full text-center font-mono text-[11px] uppercase tracking-[0.18em] text-white/40 hover:text-white/70"
+        >
+          Fechar
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export function LandingPage() {
+  const [leadOpen, setLeadOpen] = useState(false);
+  useMouseSpotlight();
+  useReveal();
+
+  return (
+    <div className="obsidian-canvas relative min-h-screen overflow-x-hidden text-white">
+      <div className="noise-layer" aria-hidden="true" />
+      <Header />
+      <main className="relative z-10">
+        <Hero onOpenLead={() => setLeadOpen(true)} />
+        <Bento />
+        <HowItWorks />
+        <Pricing onOpenLead={() => setLeadOpen(true)} />
+        <Closing onOpenLead={() => setLeadOpen(true)} />
+        <Footer />
+      </main>
+      <LeadModal open={leadOpen} onClose={() => setLeadOpen(false)} />
+    </div>
+  );
+}
