@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Trash2, GripVertical, RotateCcw } from 'lucide-react';
+import { Plus, Trash2, GripVertical, RotateCcw, ChevronDown } from 'lucide-react';
 import {
   DndContext,
   closestCenter,
@@ -26,6 +26,98 @@ const COLOR_OPTIONS = [
   { label: 'Esmeralda', value: 'bg-emerald-100 text-emerald-700' },
   { label: 'Cinza', value: 'bg-gray-100 text-gray-700' },
 ];
+
+function useOutsideClick(ref: React.RefObject<HTMLElement | null>, cb: () => void) {
+  const handler = (e: MouseEvent) => {
+    if (ref.current && !ref.current.contains(e.target as Node)) cb();
+  };
+  return {
+    open: () => document.addEventListener('mousedown', handler),
+    close: () => document.removeEventListener('mousedown', handler),
+  };
+}
+
+function Dropdown({
+  value,
+  onChange,
+  options,
+  renderOption,
+  renderSelected,
+  width,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  options: { value: string; label: string }[];
+  renderOption?: (o: { value: string; label: string }) => React.ReactNode;
+  renderSelected?: (o: { value: string; label: string } | undefined) => React.ReactNode;
+  width?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const { open: addListener, close: removeListener } = useOutsideClick(ref, () => {
+    setOpen(false);
+    removeListener();
+  });
+
+  const selected = options.find((o) => o.value === value);
+
+  function toggle() {
+    if (open) {
+      setOpen(false);
+      removeListener();
+    } else {
+      setOpen(true);
+      addListener();
+    }
+  }
+
+  function pick(v: string) {
+    onChange(v);
+    setOpen(false);
+    removeListener();
+  }
+
+  return (
+    <div ref={ref} className={`relative shrink-0 ${width ?? 'w-32'}`}>
+      <button
+        type="button"
+        onClick={toggle}
+        className="w-full flex items-center justify-between gap-1 bg-white/[0.05] border border-white/[0.10] rounded-lg px-2 py-1 text-xs text-white hover:bg-white/[0.09] transition-colors focus:outline-none focus:ring-1 focus:ring-white/20"
+      >
+        <span className="truncate">
+          {renderSelected ? renderSelected(selected) : selected?.label ?? value}
+        </span>
+        <ChevronDown size={11} className={`shrink-0 text-white/40 transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -4, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -4, scale: 0.97 }}
+            transition={{ duration: 0.1 }}
+            className="absolute z-50 top-full mt-1 left-0 min-w-full bg-[#1a1a2e] border border-white/[0.12] rounded-xl shadow-2xl overflow-hidden"
+            style={{ backdropFilter: 'blur(16px)' }}
+          >
+            {options.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => pick(opt.value)}
+                className={`w-full flex items-center gap-2 px-3 py-2 text-xs text-left transition-colors hover:bg-white/[0.08] ${
+                  opt.value === value ? 'bg-white/[0.06] text-white' : 'text-white/70'
+                }`}
+              >
+                {renderOption ? renderOption(opt) : opt.label}
+              </button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
 
 function CategoryBadge({ category }: { category: LeadCategoryRow }) {
   const Icon = resolveIcon(category.icon);
@@ -62,6 +154,9 @@ function DraggableRow({
     setDropRef(el);
   }
 
+  const iconOptions = ICON_OPTIONS.map((o) => ({ value: o.name, label: o.name }));
+  const colorOptions = COLOR_OPTIONS.map((o) => ({ value: o.value, label: o.label }));
+
   return (
     <div
       ref={setRef}
@@ -81,15 +176,31 @@ function DraggableRow({
       </button>
 
       <div className="flex-1 min-w-0 flex items-center gap-2">
-        <select
+        <Dropdown
           value={category.icon}
-          onChange={(e) => onIconChange(category.key, e.target.value)}
-          className="bg-white/[0.05] border border-white/[0.08] rounded-lg px-1.5 py-1 text-xs text-white focus:outline-none focus:ring-1 focus:ring-white/20 shrink-0"
-        >
-          {ICON_OPTIONS.map((opt) => (
-            <option key={opt.name} value={opt.name}>{opt.name}</option>
-          ))}
-        </select>
+          onChange={(v) => onIconChange(category.key, v)}
+          options={iconOptions}
+          width="w-[118px]"
+          renderOption={(o) => {
+            const Icon = resolveIcon(o.value);
+            return (
+              <>
+                <Icon size={13} className="shrink-0 text-white/60" />
+                <span>{o.label}</span>
+              </>
+            );
+          }}
+          renderSelected={(o) => {
+            if (!o) return null;
+            const Icon = resolveIcon(o.value);
+            return (
+              <span className="flex items-center gap-1.5">
+                <Icon size={12} className="shrink-0 text-white/60" />
+                {o.label}
+              </span>
+            );
+          }}
+        />
 
         <input
           value={category.label}
@@ -98,15 +209,18 @@ function DraggableRow({
           placeholder="Nome da categoria"
         />
 
-        <select
+        <Dropdown
           value={category.color}
-          onChange={(e) => onColorChange(category.key, e.target.value)}
-          className="bg-white/[0.05] border border-white/[0.08] rounded-lg px-1.5 py-1 text-xs text-white focus:outline-none focus:ring-1 focus:ring-white/20 shrink-0"
-        >
-          {COLOR_OPTIONS.map((c) => (
-            <option key={c.value} value={c.value}>{c.label}</option>
-          ))}
-        </select>
+          onChange={(v) => onColorChange(category.key, v)}
+          options={colorOptions}
+          width="w-[90px]"
+          renderOption={(o) => (
+            <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${o.value}`}>{o.label}</span>
+          )}
+          renderSelected={(o) => o ? (
+            <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${o.value}`}>{o.label}</span>
+          ) : null}
+        />
       </div>
 
       <CategoryBadge category={category} />
@@ -198,6 +312,8 @@ export function CategoriesCard() {
   }
 
   const activeCategory = activeId ? categories.find((c) => c.id === activeId) : null;
+  const iconOptions = ICON_OPTIONS.map((o) => ({ value: o.name, label: o.name }));
+  const colorOptions = COLOR_OPTIONS.map((o) => ({ value: o.value, label: o.label }));
 
   if (loading) {
     return (
@@ -244,15 +360,31 @@ export function CategoriesCard() {
               className="overflow-hidden"
             >
               <div className="flex items-center gap-2 p-3 rounded-xl bg-white/[0.05] border border-white/[0.10] mb-2">
-                <select
+                <Dropdown
                   value={newIcon}
-                  onChange={(e) => setNewIcon(e.target.value)}
-                  className="bg-white/[0.05] border border-white/[0.08] rounded-lg px-1.5 py-1 text-xs text-white focus:outline-none shrink-0"
-                >
-                  {ICON_OPTIONS.map((opt) => (
-                    <option key={opt.name} value={opt.name}>{opt.name}</option>
-                  ))}
-                </select>
+                  onChange={setNewIcon}
+                  options={iconOptions}
+                  width="w-[118px]"
+                  renderOption={(o) => {
+                    const Icon = resolveIcon(o.value);
+                    return (
+                      <>
+                        <Icon size={13} className="shrink-0 text-white/60" />
+                        <span>{o.label}</span>
+                      </>
+                    );
+                  }}
+                  renderSelected={(o) => {
+                    if (!o) return null;
+                    const Icon = resolveIcon(o.value);
+                    return (
+                      <span className="flex items-center gap-1.5">
+                        <Icon size={12} className="shrink-0 text-white/60" />
+                        {o.label}
+                      </span>
+                    );
+                  }}
+                />
                 <input
                   autoFocus
                   value={newLabel}
@@ -261,15 +393,18 @@ export function CategoriesCard() {
                   placeholder="Nome da categoria"
                   className="flex-1 bg-transparent border-b border-white/[0.15] text-sm text-white focus:outline-none focus:border-white/30 py-0.5"
                 />
-                <select
+                <Dropdown
                   value={newColor}
-                  onChange={(e) => setNewColor(e.target.value)}
-                  className="bg-white/[0.05] border border-white/[0.08] rounded-lg px-1.5 py-1 text-xs text-white focus:outline-none shrink-0"
-                >
-                  {COLOR_OPTIONS.map((c) => (
-                    <option key={c.value} value={c.value}>{c.label}</option>
-                  ))}
-                </select>
+                  onChange={setNewColor}
+                  options={colorOptions}
+                  width="w-[90px]"
+                  renderOption={(o) => (
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${o.value}`}>{o.label}</span>
+                  )}
+                  renderSelected={(o) => o ? (
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${o.value}`}>{o.label}</span>
+                  ) : null}
+                />
                 <button
                   onClick={handleAdd}
                   disabled={adding || !newLabel.trim()}
@@ -327,17 +462,14 @@ export function CategoriesCard() {
                 Leads nesta categoria serão movidos para:
               </p>
               <div className="flex items-center gap-2">
-                <select
+                <Dropdown
                   value={migrateTo}
-                  onChange={(e) => setMigrateTo(e.target.value)}
-                  className="flex-1 bg-white/[0.06] border border-white/[0.10] rounded-lg px-2 py-1.5 text-sm text-white focus:outline-none"
-                >
-                  {categories
+                  onChange={setMigrateTo}
+                  options={categories
                     .filter((c) => c.key !== deleteTarget)
-                    .map((c) => (
-                      <option key={c.key} value={c.key}>{c.label}</option>
-                    ))}
-                </select>
+                    .map((c) => ({ value: c.key, label: c.label }))}
+                  width="flex-1"
+                />
                 <button
                   onClick={confirmDelete}
                   disabled={!!deletingKey}
