@@ -496,7 +496,7 @@ function Hero() {
             <span>Começar gratuitamente</span>
             <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
           </Link>
-          <Link to="/cadastro" className="ghost-btn">Ver planos</Link>
+          <a href="#planos" className="ghost-btn">Ver planos</a>
         </div>
 
         <FunnelWave />
