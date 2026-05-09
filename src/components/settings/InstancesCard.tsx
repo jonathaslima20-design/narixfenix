@@ -70,8 +70,10 @@ function InstanceRow({ instance, onRefresh }: { instance: WhatsAppInstance; onRe
     setQr(null);
     try {
       const res = await callFn('whatsapp-connect', { instanceId: instance.id });
-      if (typeof res.qr_code === 'string' && res.qr_code) {
-        setQr(res.qr_code);
+      const inst = res.instance as Record<string, unknown> | undefined;
+      const qrCode = inst?.qr_code ?? res.qr_code;
+      if (typeof qrCode === 'string' && qrCode) {
+        setQr(qrCode.startsWith('data:') ? qrCode : `data:image/png;base64,${qrCode}`);
       }
       onRefresh();
     } catch (e) {

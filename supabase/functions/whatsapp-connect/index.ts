@@ -123,9 +123,10 @@ Deno.serve(async (req: Request) => {
       try {
         const body = await req.json();
         if (body && typeof body === "object") {
-          const b = body as { reset?: boolean; instance_id?: string; label?: string };
+          const b = body as { reset?: boolean; instance_id?: string; instanceId?: string; label?: string };
           if (b.reset === true) forceReset = true;
-          if (typeof b.instance_id === "string" && b.instance_id.trim()) targetInstanceId = b.instance_id.trim();
+          const rawId = b.instance_id || b.instanceId || "";
+          if (typeof rawId === "string" && rawId.trim()) targetInstanceId = rawId.trim();
           if (typeof b.label === "string") requestedLabel = b.label.trim().slice(0, 60);
         }
       } catch (_) {
