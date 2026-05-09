@@ -172,7 +172,7 @@ function InstanceRow({ instance, onRefresh }: { instance: WhatsAppInstance; onRe
           {!isConnected && (
             <button
               onClick={handleConnect}
-              disabled={connecting || isConnecting}
+              disabled={connecting}
               className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white/[0.07] hover:bg-white/[0.12] text-white/70 hover:text-white text-[11px] font-medium transition-all disabled:opacity-50"
             >
               {connecting ? <RefreshCw size={12} className="animate-spin" /> : <QrCode size={12} />}
