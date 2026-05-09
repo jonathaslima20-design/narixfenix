@@ -485,7 +485,7 @@ export function CampaignBuilder() {
   const estimatedMinutes = Math.ceil(estimatedSeconds / 60);
 
   return (
-    <div className="flex-1 overflow-auto bg-white/[0.04]/50">
+    <div className="absolute inset-0 overflow-auto">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {/* Header */}
         <div className="flex items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
