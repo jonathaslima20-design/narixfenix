@@ -56,70 +56,72 @@ function CampaignRow({
   const canCancel = campaign.status === 'scheduled' || campaign.status === 'sending' || campaign.status === 'paused';
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="glass rounded-3xl p-5"
-    >
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="text-[15px] font-medium text-white truncate">{campaign.name || 'Sem nome'}</h3>
-            <span
-              className={`inline-flex items-center px-2 py-0.5 rounded-full border font-mono text-[9px] uppercase tracking-wider ${STATUS_STYLES[campaign.status]}`}
-            >
-              {STATUS_LABEL[campaign.status]}
-            </span>
+    <Link to={`/dashboard/campaigns/${campaign.id}`}>
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="glass rounded-3xl p-5 cursor-pointer hover:bg-white/[0.04] transition-colors"
+      >
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="text-[15px] font-medium text-white truncate">{campaign.name || 'Sem nome'}</h3>
+              <span
+                className={`inline-flex items-center px-2 py-0.5 rounded-full border font-mono text-[9px] uppercase tracking-wider ${STATUS_STYLES[campaign.status]}`}
+              >
+                {STATUS_LABEL[campaign.status]}
+              </span>
+            </div>
+            <div className="mt-2 flex flex-wrap items-center gap-4 text-[12px] text-white/50">
+              <span className="inline-flex items-center gap-1.5">
+                <Users size={12} strokeWidth={1.5} />
+                {total.toLocaleString('pt-BR')} destinatários
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <Calendar size={12} strokeWidth={1.5} />
+                {campaign.scheduled_at ? formatDate(campaign.scheduled_at) : formatDate(campaign.created_at)}
+              </span>
+            </div>
           </div>
-          <div className="mt-2 flex flex-wrap items-center gap-4 text-[12px] text-white/50">
-            <span className="inline-flex items-center gap-1.5">
-              <Users size={12} strokeWidth={1.5} />
-              {total.toLocaleString('pt-BR')} destinatários
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <Calendar size={12} strokeWidth={1.5} />
-              {campaign.scheduled_at ? formatDate(campaign.scheduled_at) : formatDate(campaign.created_at)}
-            </span>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          {canCancel && (
-            <button
-              onClick={onCancel}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/[0.08] hover:border-white/20 text-[12px] text-white/70 hover:text-white transition-colors"
-            >
-              <Ban size={12} />
-              Cancelar
-            </button>
-          )}
-          {(campaign.status === 'draft' || campaign.status === 'cancelled' || campaign.status === 'failed' || campaign.status === 'completed') && (
-            <button
-              onClick={onDelete}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/[0.08] hover:border-rose-500/40 hover:text-rose-300 text-[12px] text-white/60 transition-colors"
-            >
-              <Trash2 size={12} />
-              Excluir
-            </button>
-          )}
-        </div>
-      </div>
-      {total > 0 && (
-        <div className="mt-4">
-          <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider text-white/40 mb-1.5">
-            <span>Progresso</span>
-            <span>{sent}/{total} · {pct}%</span>
-          </div>
-          <div className="h-1 bg-white/[0.05] rounded-full overflow-hidden">
-            <motion.div
-              className="h-full bg-gradient-to-r from-white/70 to-white"
-              initial={{ width: 0 }}
-              animate={{ width: `${pct}%` }}
-              transition={{ duration: 0.3, ease: 'easeOut' }}
-            />
+          <div className="flex items-center gap-2 shrink-0">
+            {canCancel && (
+              <button
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); onCancel(); }}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/[0.08] hover:border-white/20 text-[12px] text-white/70 hover:text-white transition-colors"
+              >
+                <Ban size={12} />
+                Cancelar
+              </button>
+            )}
+            {(campaign.status === 'draft' || campaign.status === 'cancelled' || campaign.status === 'failed' || campaign.status === 'completed') && (
+              <button
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(); }}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/[0.08] hover:border-rose-500/40 hover:text-rose-300 text-[12px] text-white/60 transition-colors"
+              >
+                <Trash2 size={12} />
+                Excluir
+              </button>
+            )}
           </div>
         </div>
-      )}
-    </motion.div>
+        {total > 0 && (
+          <div className="mt-4">
+            <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider text-white/40 mb-1.5">
+              <span>Progresso</span>
+              <span>{sent}/{total} · {pct}%</span>
+            </div>
+            <div className="h-1 bg-white/[0.05] rounded-full overflow-hidden">
+              <motion.div
+                className="h-full bg-gradient-to-r from-white/70 to-white"
+                initial={{ width: 0 }}
+                animate={{ width: `${pct}%` }}
+                transition={{ duration: 0.3, ease: 'easeOut' }}
+              />
+            </div>
+          </div>
+        )}
+      </motion.div>
+    </Link>
   );
 }
 

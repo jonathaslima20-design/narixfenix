@@ -9,6 +9,7 @@ const AuthPage = lazy(() => import('./pages/AuthPage').then((m) => ({ default: m
 const AdminLayout = lazy(() => import('./components/layout/AdminLayout').then((m) => ({ default: m.AdminLayout })));
 const UserLayout = lazy(() => import('./components/layout/UserLayout').then((m) => ({ default: m.UserLayout })));
 const CampaignBuilder = lazy(() => import('./pages/dashboard/CampaignBuilder').then((m) => ({ default: m.CampaignBuilder })));
+const CampaignDetailPage = lazy(() => import('./pages/dashboard/CampaignDetailPage').then((m) => ({ default: m.CampaignDetailPage })));
 const DashboardHome = lazy(() => import('./pages/dashboard/DashboardHome').then((m) => ({ default: m.DashboardHome })));
 const InboxPage = lazy(() => import('./pages/dashboard/InboxPage').then((m) => ({ default: m.InboxPage })));
 const LeadsPage = lazy(() => import('./pages/dashboard/LeadsPage').then((m) => ({ default: m.LeadsPage })));
@@ -55,6 +56,7 @@ export default function App() {
               <Route path="crm" element={<LeadsPage />} />
               <Route path="campaigns" element={<CampaignsPage />} />
               <Route path="campaigns/new" element={<CampaignBuilder />} />
+              <Route path="campaigns/:id" element={<CampaignDetailPage />} />
               <Route path="settings" element={<SettingsPage />} />
               <Route path="ajuda" element={<HelpPage />} />
             </Route>
