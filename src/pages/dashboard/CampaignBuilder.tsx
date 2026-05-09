@@ -1044,9 +1044,9 @@ export function CampaignBuilder() {
                 </div>
 
                 {/* Recipient count badge */}
-                <div className="bg-white/[0.10] rounded-2xl px-5 py-4 flex items-center justify-between">
+                <div className="bg-white/[0.10] rounded-2xl px-4 sm:px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
+                    <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center shrink-0">
                       <Users size={18} className="text-white" />
                     </div>
                     <div>
@@ -1058,7 +1058,7 @@ export function CampaignBuilder() {
                     </div>
                   </div>
                   {filteredLeads.length > 0 && (
-                    <p className="text-emerald-400 text-sm font-medium flex items-center gap-1">
+                    <p className="text-emerald-400 text-sm font-medium flex items-center gap-1 pl-13 sm:pl-0">
                       <Check size={14} />
                       Pronto para envio
                     </p>
@@ -1086,7 +1086,42 @@ export function CampaignBuilder() {
                     </div>
                   ) : (
                     <div className="max-h-72 overflow-auto rounded-xl border border-white/10">
-                      <table className="w-full text-sm">
+                      {/* Mobile: card-style list */}
+                      <div className="sm:hidden divide-y divide-white/[0.06]">
+                        {searchedLeads.slice(0, 100).map((l) => {
+                          const excluded = form.excludedLeadIds.has(l.id);
+                          return (
+                            <div
+                              key={l.id}
+                              className={`flex items-center gap-3 px-3 py-2.5 ${excluded ? 'opacity-40' : ''}`}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={!excluded}
+                                onChange={() => toggleExclude(l.id)}
+                                className="rounded border-white/15 shrink-0"
+                              />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-white truncate">{leadDisplayName(l) || '-'}</p>
+                                <p className="text-[11px] text-white/45 truncate">{l.phone}</p>
+                              </div>
+                              {(() => {
+                                const cat = categories.find((c) => c.key === l.category);
+                                if (!cat) return null;
+                                const CatIcon = resolveIcon(cat.icon);
+                                return (
+                                  <span className={`inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full shrink-0 ${cat.color}`}>
+                                    <CatIcon size={10} />
+                                    {cat.label}
+                                  </span>
+                                );
+                              })()}
+                            </div>
+                          );
+                        })}
+                      </div>
+                      {/* Desktop: table layout */}
+                      <table className="hidden sm:table w-full text-sm">
                         <thead className="sticky top-0 bg-white/[0.04]">
                           <tr className="text-left text-xs text-white/55 font-medium">
                             <th className="px-3 py-2 w-8" />
@@ -1145,7 +1180,7 @@ export function CampaignBuilder() {
             <motion.div key="step-2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}>
               <div className="max-w-2xl space-y-5">
                 {/* Schedule mode */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {([
                     { mode: 'now' as const, icon: Send, title: 'Enviar agora', desc: 'A campanha será iniciada imediatamente após a criação' },
                     { mode: 'later' as const, icon: Calendar, title: 'Agendar para depois', desc: 'Defina uma data e horário específicos para o envio' },
@@ -1262,11 +1297,11 @@ export function CampaignBuilder() {
                   </h3>
 
                   <div className="space-y-4">
-                    <div className="flex justify-between py-3 border-b border-white/[0.06]">
+                    <div className="flex flex-col sm:flex-row sm:justify-between gap-1 py-3 border-b border-white/[0.06]">
                       <span className="text-sm text-white/55">Nome</span>
-                      <span className="text-sm font-medium text-white">{form.name}</span>
+                      <span className="text-sm font-medium text-white break-words">{form.name}</span>
                     </div>
-                    <div className="flex justify-between py-3 border-b border-white/[0.06]">
+                    <div className="flex flex-col sm:flex-row sm:justify-between gap-1 py-3 border-b border-white/[0.06]">
                       <span className="text-sm text-white/55">Tipo de mensagem</span>
                       <span className="text-sm font-medium text-white capitalize">{form.message_type === 'text' ? 'Texto' : form.message_type === 'image' ? 'Imagem' : form.message_type === 'audio' ? 'Áudio' : 'Documento'}</span>
                     </div>
@@ -1288,16 +1323,16 @@ export function CampaignBuilder() {
                       </div>
                     )}
                     {form.mediaFile && form.message_type !== 'audio' && (
-                      <div className="flex justify-between py-3 border-b border-white/[0.06]">
+                      <div className="flex flex-col sm:flex-row sm:justify-between gap-1 py-3 border-b border-white/[0.06]">
                         <span className="text-sm text-white/55">Arquivo</span>
-                        <span className="text-sm font-medium text-white">{form.mediaFile.name}</span>
+                        <span className="text-sm font-medium text-white truncate">{form.mediaFile.name}</span>
                       </div>
                     )}
                     <div className="flex justify-between py-3 border-b border-white/[0.06]">
                       <span className="text-sm text-white/55">Destinatários</span>
                       <span className="text-sm font-semibold text-white">{filteredLeads.length} leads</span>
                     </div>
-                    <div className="flex justify-between py-3 border-b border-white/[0.06]">
+                    <div className="flex flex-col sm:flex-row sm:justify-between gap-1 py-3 border-b border-white/[0.06]">
                       <span className="text-sm text-white/55">Agendamento</span>
                       <span className="text-sm font-medium text-white">
                         {form.schedule_mode === 'now' ? 'Envio imediato' : `${form.scheduled_date} às ${form.scheduled_time}`}
@@ -1309,9 +1344,9 @@ export function CampaignBuilder() {
                         <span className="text-sm font-medium text-white">{form.send_window_start} - {form.send_window_end}</span>
                       </div>
                     )}
-                    <div className="flex justify-between py-3 border-b border-white/[0.06]">
+                    <div className="flex flex-col sm:flex-row sm:justify-between gap-1 py-3 border-b border-white/[0.06]">
                       <span className="text-sm text-white/55">Intervalo</span>
-                      <span className="text-sm font-medium text-white">entre {Math.round(form.delay_ms / 1000)}s e {Math.round(form.delay_ms_max / 1000)}s (aleatório)</span>
+                      <span className="text-sm font-medium text-white">entre {Math.round(form.delay_ms / 1000)}s e {Math.round(form.delay_ms_max / 1000)}s</span>
                     </div>
                     <div className="flex justify-between py-3">
                       <span className="text-sm text-white/55">Tempo estimado</span>
